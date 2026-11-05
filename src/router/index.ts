@@ -1,64 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import MainRoutes from './MainRoutes'; // Authenticated routes
-import PublicRoutes from './PublicRoutes'; // Public routes
-import { useAuthStore } from '@/stores/auth'; // Pinia auth store
-import { useUIStore } from '@/stores/ui'; // Pinia UI store (for loading spinner)
+import PublicRoutes from './PublicRoutes';
 import EmployeeRoutes from './EmployeeRoutes';
+import { useAuthStore } from '@/stores/auth';
+import { useUIStore } from '@/stores/ui';
 
-// -------------------------------------------------------------
-// ROUTER CONFIGURATION
-// -------------------------------------------------------------
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    PublicRoutes, // spread ensures routes are loaded correctly
-    /* MainRoutes, */
+    PublicRoutes,
     EmployeeRoutes,
     {
-      path: '/:pathMatch(.*)*', // Catch-all for 404s
+      path: '/:pathMatch(.*)*',
       component: () => import('@/views/pages/maintenance/error/Error404Page.vue')
     }
   ]
 });
 
-// -------------------------------------------------------------
-// TYPE INTERFACES (optional, for better IntelliSense)
-// -------------------------------------------------------------
-interface User {
-  id: number;
-  name: string;
-}
-
-interface AuthStore {
-  user: User | null;
-  returnUrl: string | null;
-  login(username: string, password: string): Promise<void>;
-  logout(): void;
-}
-
-// -------------------------------------------------------------
 // GLOBAL ROUTE GUARD
-// -------------------------------------------------------------
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const uiStore = useUIStore();
-  const auth: AuthStore = useAuthStore();
+  const auth = useAuthStore();
 
   uiStore.isLoading = true;
 
-  const publicPages = ['/login'];
+  const publicPages = ['/', '/login', '/login1', '/register1', '/forgot-pwd1', '/reset-pwd1', '/error'];
   const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((r) => r.meta.requiresAuth);
-  /*   console.log(authRequired)
-    console.log(to.path) */
-  // 🚪 Redirect unauthenticated users trying to access protected routes
+
   if (auth.user) {
-    if (authRequired) {
-      next();
-    } else {
+    if (isPublicPage && to.path === '/login') {
       next({ path: '/dashboard' });
+    } else {
+      next();
     }
   } else {
-    if (authRequired || to.path === '/') {
+    if (authRequired) {
       next({ path: '/login' });
     } else {
       next();
@@ -66,9 +42,6 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
-// -------------------------------------------------------------
-// STOP LOADING AFTER NAVIGATION
-// -------------------------------------------------------------
 router.afterEach(() => {
   const uiStore = useUIStore();
   uiStore.isLoading = false;

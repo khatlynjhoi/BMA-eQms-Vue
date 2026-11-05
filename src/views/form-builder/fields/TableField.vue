@@ -1,130 +1,116 @@
-<template>
-    <div class="pa-3 border rounded">
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
 
-        <!-- LABEL -->
-        <h4 class="text-subtitle-1 font-weight-bold mb-2">
-            {{ field.label }}
-        </h4>
+interface ColumnDef {
+  model: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number';
+}
 
-        <!-- TABLE -->
-        <v-table density="compact" class="border">
-            <thead>
-                <tr>
-                    <th v-for="col in field.columns" :key="col.model">
-                        {{ col.label }}
-                    </th>
-                </tr>
-            </thead>
+const props = defineProps<{
+  field: {
+    label: string;
+    columns: ColumnDef[];
+  };
+  modelValue?: Record<string, any>[];
+}>();
 
-            <tbody>
-                <tr v-for="value in source" :key="value.id">
-                    <td v-for="col in field.columns" :key="col.model">
-                        <v-text-field v-if="col.type === 'text'" v-model="value[col.model]" density="comfortable"
-                            hide-details="auto" variant="outlined" color="primary" width="200">
-                        </v-text-field>
-                        <v-textarea v-else-if="col.type === 'textarea'" v-model="value[col.model]" density="comfortable"
-                            hide-details="auto" variant="outlined" color="primary">
-                        </v-textarea>
-                        <v-text-field v-else-if="col.type === 'number'" v-model="value[col.model]" type="number"
-                            density="comfortable" hide-details="auto" variant="outlined" color="primary"></v-text-field>
-                    </td>
-                </tr>
-            </tbody>
-        </v-table>
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: Record<string, any>[]): void;
+}>();
 
-        <!-- ADD ROW BUTTON -->
-        <v-btn size="small" class="mt-2" @click="addRow">
-            + Add Row
-        </v-btn>
+const source = ref<Record<string, any>[]>([]);
 
-    </div>
-</template>
-
-<!-- <script>
-export default {
-    name: "TableField",
-    props: {
-        field: Object,
-    },
-    data() {
-        return {
-            source: []
-        }
-    },
-    mounted() {
-        // Initialize source with one empty row based on the columns defined in the field
-        const initialRow = {};
-        this.field.columns.forEach(col => {
-            initialRow[col.model] = '';
-        });
-        this.source.push(initialRow);
-    },
-    methods: {
-        addRow() {
-            // How to add a new row to the table? We can push an empty object to the source array, and then use v-model in the table cells to bind the input values to the object properties.
-            const newRow = {};
-            this.field.columns.forEach(col => {
-                newRow[col.model] = '';
-            });
-            this.source.push(newRow);
-        },
-
-        removeRow(index) {
-            this.rows.splice(index, 1);
-        }
-    }
+const createEmptyRow = () => {
+  const row: Record<string, any> = { id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 4)}` };
+  props.field.columns.forEach((col) => {
+    row[col.model] = '';
+  });
+  return row;
 };
-</script> -->
-<script>
-export default {
-    name: "TableField",
-    props: {
-        field: Object,
-        modelValue: [String, Number, Object] // ✅ receive data from parent
-    },
-    emits: ['update:modelValue'],
 
-    data() {
-        return {
-            source: []
-        }
-    },
+onMounted(() => {
+  if (props.modelValue && props.modelValue.length > 0) {
+    source.value = props.modelValue;
+  } else {
+    source.value = [createEmptyRow()];
+  }
+});
 
-    mounted() {
-        const initialRow = {};
-        this.field.columns.forEach(col => {
-            initialRow[col.model] = '';
-        });
-        this.source.push(initialRow);
-    },
+watch(
+  source,
+  (val) => {
+    emit('update:modelValue', val);
+  },
+  { deep: true }
+);
 
-    watch: {
-        source: {
-            deep: true,
-            handler(val) {
-                this.$emit('update:modelValue', val); // ✅ send data to parent
-            }
-        }
-    },
+const addRow = () => {
+  source.value.push(createEmptyRow());
+};
 
-    methods: {
-        addRow() {
-            const newRow = {};
-            this.field.columns.forEach(col => {
-                newRow[col.model] = '';
-            });
-            this.source.push(newRow);
-        },
-
-        removeRow(index) {
-            this.source.splice(index, 1);
-        }
-    }
+const removeRow = (index: number) => {
+  if (source.value.length > 1) {
+    source.value.splice(index, 1);
+  }
 };
 </script>
-<style scoped>
-.border {
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-}
-</style>
+
+<template>
+  <div class="pa-3 border rounded bg-surface">
+    <h4 class="text-subtitle-2 font-weight-bold mb-2">{{ field.label }}</h4>
+
+    <v-table density="compact" class="border rounded">
+      <thead>
+        <tr>
+          <th v-for="col in field.columns" :key="col.model" class="text-left font-weight-bold">
+            {{ col.label }}
+          </th>
+          <th style="width: 50px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(row, idx) in source" :key="row.id || idx">
+          <td v-for="col in field.columns" :key="col.model" class="py-1">
+            <v-text-field
+              v-if="col.type === 'text'"
+              v-model="row[col.model]"
+              density="compact"
+              hide-details="auto"
+              variant="outlined"
+              color="primary"
+            />
+            <v-textarea
+              v-else-if="col.type === 'textarea'"
+              v-model="row[col.model]"
+              density="compact"
+              hide-details="auto"
+              variant="outlined"
+              color="primary"
+              rows="1"
+              auto-grow
+            />
+            <v-text-field
+              v-else-if="col.type === 'number'"
+              v-model="row[col.model]"
+              type="number"
+              density="compact"
+              hide-details="auto"
+              variant="outlined"
+              color="primary"
+            />
+          </td>
+          <td class="text-center py-1">
+            <v-btn icon variant="text" size="x-small" color="error" :disabled="source.length <= 1" @click="removeRow(idx)">
+              <v-icon size="16">mdi-close</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </v-table>
+
+    <v-btn size="small" variant="tonal" color="primary" class="mt-2 text-none" @click="addRow">
+      + Add Row
+    </v-btn>
+  </div>
+</template>

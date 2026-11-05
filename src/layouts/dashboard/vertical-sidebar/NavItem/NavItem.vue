@@ -1,22 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
-const props = defineProps({ item: Object, level: Number });
 import SvgSprite from '@/components/shared/SvgSprite.vue';
-import { string } from 'yup';
 
-const relativeURL = ref(string);
+const props = defineProps({ 
+  item: { type: Object, required: true }, 
+  level: { type: Number, default: 0 } 
+});
 
-onMounted(async () => {
+const relativeURL = ref('');
+
+onMounted(() => {
   try {
-    relativeURL.value = await import.meta.env.BASE_URL;
+    relativeURL.value = import.meta.env.BASE_URL || '';
   } catch (error) {
-    console.error('Error url not found:', error);
+    console.error('Error fetching BASE_URL:', error);
   }
 });
 </script>
 
 <template>
-  <!---Single Item-->
+  <!-- Single Item with Base URL prepend -->
   <v-list-item
     v-if="props.item.getURL === true"
     :to="item.type === 'external' ? '' : item.to"
@@ -26,22 +29,29 @@ onMounted(async () => {
     :disabled="item.disabled"
     :target="item.type === 'external' ? '_blank' : ''"
   >
-    <!---If icon-->
     <template v-slot:prepend>
       <SvgSprite :name="props.item.icon || ''" :level="props.level" />
     </template>
     <v-list-item-title>{{ item.title }}</v-list-item-title>
-    <!---If Caption-->
+    
     <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-0 hide-menu">
       {{ item.subCaption }}
     </v-list-item-subtitle>
-    <!---If any chip or label-->
+    
     <template v-slot:append v-if="item.chip">
-      <v-chip :color="item.chipColor" class="sidebarchip hide-menu" size="small" :variant="item.chipVariant" :prepend-icon="item.chipIcon">
+      <v-chip 
+        :color="item.chipColor" 
+        class="sidebarchip hide-menu" 
+        size="x-small" 
+        :variant="item.chipVariant" 
+        :prepend-icon="item.chipIcon"
+      >
         {{ item.chip }}
       </v-chip>
     </template>
   </v-list-item>
+
+  <!-- Standard Single Item -->
   <v-list-item
     v-else
     :to="item.type === 'external' ? '' : item.to"
@@ -51,18 +61,23 @@ onMounted(async () => {
     :disabled="item.disabled"
     :target="item.type === 'external' ? '_blank' : ''"
   >
-    <!---If icon-->
     <template v-slot:prepend>
       <SvgSprite :name="props.item.icon || ''" :level="props.level" />
     </template>
     <v-list-item-title>{{ item.title }}</v-list-item-title>
-    <!---If Caption-->
+    
     <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-0 hide-menu">
       {{ item.subCaption }}
     </v-list-item-subtitle>
-    <!---If any chip or label-->
+    
     <template v-slot:append v-if="item.chip">
-      <v-chip :color="item.chipColor" class="sidebarchip hide-menu" size="small" :variant="item.chipVariant" :prepend-icon="item.chipIcon">
+      <v-chip 
+        :color="item.chipColor" 
+        class="sidebarchip hide-menu" 
+        size="x-small" 
+        :variant="item.chipVariant" 
+        :prepend-icon="item.chipIcon"
+      >
         {{ item.chip }}
       </v-chip>
     </template>

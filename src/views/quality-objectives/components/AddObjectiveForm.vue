@@ -1,81 +1,76 @@
-<template>
-    <v-card>
-        <v-card-title class="text-h5 d-flex align-center">
-            {{ modal.form.qor_id ? 'UPDATE' : 'ADD' }}
-            ADD QUALITY OBJECTIVE
-            <v-spacer></v-spacer>
-            <v-btn v-if="modal.form.qor_id" color="error" class="me-3"
-                @click="$emit('removed', modal.form?.qor_id)">Remove</v-btn>
-            <v-btn color="primary" @click="modal.show = false">Close</v-btn>
-        </v-card-title>
-        <v-card-text class="pa-5">
-            <form @submit.prevent="$emit('store', formData)" class="mb-5">
-                <div v-for="(input, index) in formInputs" :key="index" class="form-group">
-                    <v-label color="info">{{ input.label }} <span>*</span></v-label>
-                    <v-textarea v-model="formData[input.model]" variant="outlined" class="mt-2" color="success"
-                        placeholder="" rows="3">
-                    </v-textarea>
-                </div>
-                <v-btn type="submit" color="primary" class="mb-4">Save Objectives</v-btn>
-            </form>
-        </v-card-text>
-    </v-card>
-</template>
-<script>
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 
-export default {
-    name: 'AddObjectiveModal',
-    props: {
-        modal: Object
-    },
-    data() {
-        return {
-            formData: {}
-        }
-    },
-    watch: {
-        'modal.form': {
-            immediate: true,
-            deep: true,
-            handler(val) {
-                this.formData = { ...val }   // shallow copy
-            }
-        }
-    },
-    computed: {
-        formInputs() {
-            return [
-                { label: 'QUALITY OBJECTIVE', model: 'quality_objective', rows: 3 },
-                { label: 'TARGET', model: 'target', rows: 3 },
-                { label: 'KEY PERFORMANCE INDICATOR', model: 'key_performance_indicator', rows: 3 },
-                { label: 'MEASUREMENT', model: 'measurement_method', rows: 3 },
-                { label: 'ACTUAL PERFORMANCE', model: 'actual_performance', rows: 3 },
-                { label: 'TARGET MET (YES/NO)', model: 'target_met', rows: 3 },
-                { label: 'TIME FRAME', model: 'time_frame', rows: 3 },
-                { label: 'PROOF OF EVIDENCE', model: 'proof_of_evidence', rows: 3 },
-                { label: 'FREQUENCY OF REPORT', model: 'frequency_of_report', rows: 3 }
-            ]
-        }
-    },
-    /*   data() {
-          //const formData = new FormData()
-          const formData = this.modal.form
-          const formInputs = [
-              { label: 'QUALITY OBJECTIVE', model: formData.quality_objective, rows: 3 },
-              { label: 'TARGET', model: formData.target, rows: 3 },
-              { label: 'KEY PERFORMANCE INDICTOR', model: formData.key_performance_indicator, rows: 3 },
-              { label: 'MEASUREMENT', model: formData.measurement_method, rows: 3 },
-              { label: 'ACTUAL PERFORMANCE', model: formData.actual_performance, rows: 3 },
-              { label: 'TARGET MET (YES/NO)', model: formData.target_met, rows: 3 },
-              { label: 'TIME FRAME', model: formData.time_frame, rows: 3 },
-              { label: 'PROOF OF EVIDENCE', model: formData.proof_of_evidence, rows: 3 },
-              { label: 'FREQUENCY OF REPORT', model: formData.frequency_of_report, rows: 3 }
-  
-          ]
-          return {
-              formInputs, formData
-          }
-      }, */
-    emits: ['store', 'removed'],
-}
+const props = defineProps<{
+  modal: {
+    show: boolean;
+    form: Record<string, any>;
+  };
+}>();
+
+const emit = defineEmits(['store', 'removed']);
+
+const formData = ref<Record<string, any>>({});
+
+watch(
+  () => props.modal.form,
+  (val) => {
+    formData.value = { ...val };
+  },
+  { immediate: true, deep: true }
+);
+
+const formInputs = [
+  { label: 'QUALITY OBJECTIVE (CLAUSE 6.2.1)', model: 'quality_objective' },
+  { label: 'TARGET METRIC', model: 'target' },
+  { label: 'KEY PERFORMANCE INDICATOR (KPI)', model: 'key_performance_indicator' },
+  { label: 'MEASUREMENT METHODOLOGY', model: 'measurement_method' },
+  { label: 'ACTUAL PERFORMANCE', model: 'actual_performance' },
+  { label: 'TARGET MET (YES / NO)', model: 'target_met' },
+  { label: 'TIME FRAME / DEADLINE', model: 'time_frame' },
+  { label: 'PROOF OF EVIDENCE (DOCUMENT REF)', model: 'proof_of_evidence' },
+  { label: 'FREQUENCY OF REPORTING', model: 'frequency_of_report' }
+];
 </script>
+
+<template>
+  <v-card border elevation="0" rounded="lg">
+    <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
+      <span class="text-h6 font-weight-bold">
+        {{ modal.form?.qor_id ? 'Update Quality Objective' : 'Add Quality Objective Metric' }}
+      </span>
+      <div class="d-flex ga-2">
+        <v-btn v-if="modal.form?.qor_id" color="error" size="small" variant="flat" @click="emit('removed', modal.form?.qor_id)">
+          Remove Metric
+        </v-btn>
+        <v-btn icon variant="text" color="white" size="small" @click="modal.show = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </v-card-title>
+
+    <v-card-text class="pa-6">
+      <v-form @submit.prevent="emit('store', formData)">
+        <v-row dense>
+          <v-col v-for="(input, index) in formInputs" :key="index" cols="12" md="6">
+            <v-textarea
+              v-model="formData[input.model]"
+              :label="input.label"
+              variant="outlined"
+              density="compact"
+              rows="2"
+              auto-grow
+              class="mb-2"
+            />
+          </v-col>
+        </v-row>
+
+        <div class="text-right mt-4">
+          <v-btn type="submit" color="primary" variant="flat">
+            Save Quality Objective Metric
+          </v-btn>
+        </div>
+      </v-form>
+    </v-card-text>
+  </v-card>
+</template>

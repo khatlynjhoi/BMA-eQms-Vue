@@ -1,23 +1,21 @@
-
 // Define a type for the possible keys in the `links` objects
 type DocumentModel = 'FormDocuments' | 'ProcedureDocuments';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-export class GeneralController {
 
+export class GeneralController {
     private token: string | null;
 
     constructor() {
-        let storedProfile;
         try {
             const userData = localStorage.getItem('user');
-            storedProfile = userData ? JSON.parse(userData) : null;
+            const storedProfile = userData ? JSON.parse(userData) : null;
+            this.token = storedProfile?.token || null;
         } catch (error) {
             console.error('Failed to parse user data from localStorage:', error);
-            storedProfile = null;
+            this.token = null;
         }
-        this.token = storedProfile || null;
-        console.log(this.token)
     }
+
     private async _fetch(url: string, options: RequestInit): Promise<Response> {
         if (!this.token) {
             console.error("Authentication token not available.");
@@ -26,7 +24,7 @@ export class GeneralController {
 
         const headers: HeadersInit = {
             'Authorization': 'Bearer ' + this.token,
-            ...options.headers, // Merge any custom headers
+            ...options.headers,
         };
 
         const response = await fetch(url, {
@@ -35,7 +33,7 @@ export class GeneralController {
         });
 
         if (!response.ok) {
-            const errorBody = await response.json().catch(() => ({})); // Try to parse error body if available
+            const errorBody = await response.json().catch(() => ({}));
             throw new Error(`HTTP error! Status: ${response.status}, Message: ${JSON.stringify(errorBody)}`);
         }
 
@@ -43,29 +41,29 @@ export class GeneralController {
     }
 
     /**
-     * Retrieves data via a POST request.
-     * @param apiLink The API endpoint URL.
-     * @param formData The data to be sent in the request body. Can be a plain object, FormData, etc.
-     * @param columnName The name of the column in the response data to return.
-     * @returns A Promise that resolves with the data from the specified column, or an empty array on error.
+     * Retrieves data via an instance POST request.
      */
     public async retrieveData<T>(apiLink: string, formData: any, columnName: string): Promise<T[] | any[]> {
         try {
             const options: RequestInit = {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Assuming JSON data for general POST                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData), // Convert to JSON string
+                body: JSON.stringify(formData),
             };
             const response = await this._fetch(apiLink, options);
             const data = await response.json();
             return data[columnName];
         } catch (error) {
-            console.error("Error in retrieveData:", error);
+            console.error("Error in instance retrieveData:", error);
             return [];
         }
     }
+
+    /**
+     * Retrieves data via a static POST request.
+     */
     static async retrieveData<T>(apiLink: string, formData: any, columnName: string): Promise<T[] | any[]> {
         try {
             const token = getToken();
@@ -81,21 +79,16 @@ export class GeneralController {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const data = await response.json(); // <-- Correct way to get JSON data
-            return data[columnName];
-        } catch (error) {
-            console.error("Error in retrieveData:", error);
-            return {
-                status: 500,
-                message: error.message || 'Internal Server Error',
-            };
+            const data = await response.json();
+            return data[columnName] || [];
+        } catch (error: any) {
+            console.error("Error in static retrieveData:", error);
+            return [];
         }
     }
+
     /**
-     * Retrieves data via a GET request.
-     * @param apiLink The API endpoint URL.
-     * @param columnName The name of the column in the response data to return.
-     * @returns A Promise that resolves with the data from the specified column, or an empty array on error.
+     * Retrieves data via an instance GET request.
      */
     public async retrieveGETData<T>(apiLink: string, columnName: string): Promise<T[] | any[]> {
         try {
@@ -106,10 +99,14 @@ export class GeneralController {
             const data = await response.json();
             return data[columnName];
         } catch (error) {
-            console.error("Error in retrieveData:", error);
+            console.error("Error in retrieveGETData:", error);
             return [];
         }
     }
+
+    /**
+     * Retrieves data via a static GET request.
+     */
     static async retrieveDataGet<T>(apiLink: string, columnName: string): Promise<T[] | any[]> {
         try {
             const token = getToken();
@@ -123,15 +120,13 @@ export class GeneralController {
             const data = await response.json();
             return data[columnName];
         } catch (error) {
-            console.error("Error in retrieveData:", error);
+            console.error("Error in static retrieveDataGet:", error);
             return [];
         }
     }
+
     /**
-     * Retrieves a file via a POST request.
-     * @param model The document model type (e.g., 'FormDocuments').
-     * @param data The data to be sent in the request body.
-     * @returns A Promise that resolves with the Blob, or an empty array on error.
+     * Retrieves a file via a static POST request.
      */
     static async retrieveFile(data: any, targetApiLink: string): Promise<Blob> {
         try {
@@ -140,14 +135,13 @@ export class GeneralController {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json', // Tell the server we're sending JSON
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data), // Send the 'link' object as JSON
+                body: JSON.stringify(data),
             };
 
             const response = await fetch(baseUrl + targetApiLink, fetchOptions);
 
-            // Handle HTTP errors (e.g., 404, 500, 401, 403)
             if (!response.ok) {
                 let errorInfo = `HTTP error! Status: ${response.status}`;
                 try {
@@ -155,19 +149,21 @@ export class GeneralController {
                     errorInfo += `, Details: ${JSON.stringify(errorJson)}`;
                 } catch (e) {
                     const errorText = await response.text();
-                    errorInfo += `, Response: "${errorText.substring(0, 100)}..."`; // Truncate long responses
+                    errorInfo += `, Response: "${errorText.substring(0, 100)}..."`;
                 }
                 throw new Error(errorInfo);
             }
 
-            // If the request was successful, return the response as a Blob (the PDF file)
             return await response.blob();
         } catch (err) {
-            console.error("API Call Error in GeneralController.retrieveFile:", err);
-            // Re-throw the error so the calling component can handle it
+            console.error("API Call Error in static GeneralController.retrieveFile:", err);
             throw err;
         }
     }
+
+    /**
+     * Retrieves a file via a static GET request.
+     */
     static async retrieveGetFile(targetApiLink: string): Promise<Blob> {
         try {
             const token = getToken();
@@ -175,13 +171,12 @@ export class GeneralController {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json', // Tell the server we're sending JSON
-                },// Send the 'link' object as JSON
+                    'Content-Type': 'application/json',
+                },
             };
 
             const response = await fetch(baseUrl + targetApiLink, fetchOptions);
 
-            // Handle HTTP errors (e.g., 404, 500, 401, 403)
             if (!response.ok) {
                 let errorInfo = `HTTP error! Status: ${response.status}`;
                 try {
@@ -189,47 +184,40 @@ export class GeneralController {
                     errorInfo += `, Details: ${JSON.stringify(errorJson)}`;
                 } catch (e) {
                     const errorText = await response.text();
-                    errorInfo += `, Response: "${errorText.substring(0, 100)}..."`; // Truncate long responses
+                    errorInfo += `, Response: "${errorText.substring(0, 100)}..."`;
                 }
                 throw new Error(errorInfo);
             }
 
-            // If the request was successful, return the response as a Blob (the PDF file)
             return await response.blob();
         } catch (err) {
-            console.error("API Call Error in GeneralController.retrieveGetFile:", err);
-            // Re-throw the error so the calling component can handle it
+            console.error("API Call Error in static GeneralController.retrieveGetFile:", err);
             throw err;
         }
     }
+
     /**
-     * Retrieves a file via a POST request (duplicate function name, consider renaming for clarity).
-     * @param apiLink The API endpoint URL.
-     * @param column The data to be sent in the request body (named 'column' but seems to be data).
-     * @returns A Promise that resolves with the Blob, or an empty array on error.
+     * Retrieves a file via an instance POST request (Corrected Typo).
      */
-    public async retriveFile(apiLink: string, column: any): Promise<Blob | any[]> {
+    public async retrieveFile(apiLink: string, column: any): Promise<Blob | any[]> {
         try {
             const options: RequestInit = {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Assuming JSON data for this endpoint
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(column),
             };
             const response = await this._fetch(apiLink, options);
-            return await response.blob(); // Get the response as a Blob
+            return await response.blob();
         } catch (error) {
-            console.error("Error in retriveFile (second instance):", error);
+            console.error("Error in instance retrieveFile:", error);
             return [];
         }
     }
 
     /**
      * Stores an item via a POST request with multipart/form-data.
-     * @param apiLink The API endpoint URL.
-     * @param data The data to be sent in the request body (FormData).
-     * @returns A Promise that resolves with the Response object.
      */
     static async storeItem(apiLink: string, data: FormData): Promise<Response> {
         const token = getToken();
@@ -239,7 +227,7 @@ export class GeneralController {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
             },
-            body: data, // FormData handles 'Content-Type': 'multipart/form-data' automatically
+            body: data,
         };
         try {
             return await fetch(baseUrl + apiLink, options);
@@ -248,7 +236,11 @@ export class GeneralController {
             throw error;
         }
     }
-    static async storeJson(apiLink: string, data: FormData): Promise<Response> {
+
+    /**
+     * Stores JSON data via a POST request.
+     */
+    static async storeJson(apiLink: string, data: any): Promise<Response> {
         const token = getToken();
         const options: RequestInit = {
             method: 'POST',
@@ -257,18 +249,18 @@ export class GeneralController {
                 'Accept': 'application/json',
                 "Content-Type": "application/json",
             },
-            body: data, // FormData handles 'Content-Type': 'multipart/form-data' automatically
+            body: JSON.stringify(data),
         };
         try {
             return await fetch(baseUrl + apiLink, options);
         } catch (error) {
-            console.error("Error in storeItem:", error);
+            console.error("Error in storeJson:", error);
             throw error;
         }
     }
+
     static async storeItemFiles(apiLink: string, data: FormData): Promise<any> {
         const token = getToken();
-
         const options: RequestInit = {
             method: 'POST',
             headers: {
@@ -280,20 +272,16 @@ export class GeneralController {
 
         const response = await fetch(baseUrl + apiLink, options);
 
-        // ✅ Handle errors properly
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText);
         }
 
-        // ✅ Always safe now because Laravel returns JSON
         return await response.json();
     }
+
     /**
-     * Removes an item via a POST request with multipart/form-data.
-     * @param apiLink The API endpoint URL.
-     * @param data The data to be sent in the request body (FormData).
-     * @returns A Promise that resolves with the Response object.
+     * Removes an item via a POST request.
      */
     static async removeItem(apiLink: string, data: FormData): Promise<Response> {
         const token = getToken();
@@ -313,10 +301,7 @@ export class GeneralController {
     }
 
     /**
-     * Sends a print log request via a POST request with multipart/form-data.
-     * @param model The document model type (e.g., 'FormDocuments').
-     * @param data The data to be sent in the request body (FormData).
-     * @returns A Promise that resolves with the Response object.
+     * Sends a print log request via a POST request.
      */
     public async printLog(model: DocumentModel, data: FormData): Promise<Response> {
         const links: Record<DocumentModel, string> = {
@@ -343,10 +328,7 @@ export class GeneralController {
     }
 
     /**
-     * Downloads a file via a POST request with multipart/form-data.
-     * @param model The document model type (e.g., 'FormDocuments').
-     * @param data The data to be sent in the request body (FormData).
-     * @returns A Promise that resolves with the Blob.
+     * Downloads a file via a POST request.
      */
     public async downloadFile(model: DocumentModel, data: FormData): Promise<Blob> {
         const links: Record<DocumentModel, string> = {
@@ -366,7 +348,7 @@ export class GeneralController {
         };
         try {
             const response = await this._fetch(link, options);
-            return await response.blob(); // Get the response as a Blob
+            return await response.blob();
         } catch (error) {
             console.error("Error in downloadFile:", error);
             throw error;
@@ -374,12 +356,9 @@ export class GeneralController {
     }
 
     /**
-     * Retrieves analytics data via a POST request.
-     * @param model The document model type (e.g., 'FormDocuments').
-     * @param data The data to be sent in the request body.
-     * @returns A Promise that resolves with the JSON response, or an empty array on error.
+     * Retrieves analytics data via a POST request (Corrected Typo).
      */
-    public async retriveAnalytics<T>(model: DocumentModel, data: any): Promise<T | any[]> {
+    public async retrieveAnalytics<T>(model: DocumentModel, data: any): Promise<T | any[]> {
         const links: Record<DocumentModel, string> = {
             FormDocuments: '/forms/form-documents/analytics',
             ProcedureDocuments: '/procedure/procedure-documents/analytics'
@@ -387,7 +366,7 @@ export class GeneralController {
         const apiLink: string | undefined = links[model];
 
         if (!apiLink) {
-            console.error(`Invalid model provided for retriveAnalytics: ${model}`);
+            console.error(`Invalid model provided for retrieveAnalytics: ${model}`);
             return [];
         }
 
@@ -402,17 +381,13 @@ export class GeneralController {
             const response = await this._fetch(apiLink, options);
             return await response.json();
         } catch (error) {
-            console.error("Error in retriveAnalytics:", error);
+            console.error("Error in retrieveAnalytics:", error);
             return [];
         }
     }
 
     /**
      * Gets analytics data for a specific column via a POST request.
-     * @param model The document model type (e.g., 'FormDocuments').
-     * @param data The data to be sent in the request body.
-     * @param column The name of the column in the response data to return.
-     * @returns A Promise that resolves with the data from the specified column, or an empty array on error.
      */
     public async getAnalytics<T>(model: DocumentModel, data: any, column: string): Promise<T[] | any[]> {
         const links: Record<DocumentModel, string> = {
@@ -444,12 +419,15 @@ export class GeneralController {
     }
 }
 
-function getToken() {
-    const userData = localStorage.getItem('user');
-    let token = null
-    if (userData) {
-        let parse = JSON.parse(userData);
-        token = parse.token
+function getToken(): string | null {
+    try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            const parse = JSON.parse(userData);
+            return parse?.token || null;
+        }
+    } catch (e) {
+        console.error("Failed to retrieve token from localStorage:", e);
     }
-    return token
+    return null;
 }

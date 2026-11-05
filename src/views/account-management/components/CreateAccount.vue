@@ -1,95 +1,139 @@
-<template>
-    <v-container>
-        <div v-if="isSubmit" class="">
-            <div class="d-flex flex-column justify-center align-center pa-5">
-                <img src="@/assets/images/formLoader.gif" alt="Loading" />
-                <p class="h3 text-primary font-weight-bold mt-3">LOADING...</p>
-            </div>
-        </div>
-        <v-form v-else ref="accountForm" @submit.prevent="submitForm">
-            <!-- First Name -->
-            <v-text-field v-model="firstName" :rules="[rules.required]" label="First Name" required></v-text-field>
-
-            <!-- Last Name -->
-            <v-text-field v-model="lastName" :rules="[rules.required]" label="Last Name" required></v-text-field>
-
-            <!-- Email (Optional) -->
-            <v-text-field v-model="email" :rules="[rules.optionalEmail]" label="Email (Optional)"></v-text-field>
-
-            <!-- Role Dropdown -->
-            <v-select v-model="role" :items="roles" item-title="name" item-value="id" :rules="[rules.required]"
-                label="Role" required></v-select>
-
-            <!-- Department Dropdown -->
-            <v-select v-model="department" :items="departments" item-title="name" item-value="id"
-                :rules="[rules.required]" label="Department" required></v-select>
-
-            <!-- Submit Button -->
-            <v-btn type="submit" color="primary" class="mt-4">Create Account</v-btn>
-        </v-form>
-    </v-container>
-</template>
-<script>
+<script setup lang="ts">
+import { ref } from 'vue';
 import { GeneralController } from '@/stores/GeneralController';
-import { defineComponent } from 'vue';
+import alertService from '@/services/alertService';
 
-export default defineComponent({
-    name: 'CreateAccount',
-    data() {
-        return {
+defineProps<{
+  roles: any[];
+  departments: any[];
+}>();
 
-            isSubmit: false,
-            firstName: '',
-            lastName: '',
-            role: '',
-            department: '',
-            email: '',
-            rules: {
-                required: value => !!value || 'This field is required',
-                optionalEmail: value =>
-                    !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Email must be valid'
-            }
-        }
-    },
-    props: {
-        roles: Object,
-        departments: Object
-    },
-    methods: {
-        async submitForm() {
-            const isValid = await this.$refs.accountForm.validate();
-            if (!isValid.valid) {
-                // Show error or stop the process
-                console.warn('Form validation failed');
-                return;
-            }
+const emit = defineEmits<{
+  (e: 'created'): void;
+}>();
 
-            this.isSubmit = true;
+const accountForm = ref<any>(null);
+const isSubmit = ref(false);
+const firstName = ref('');
+const lastName = ref('');
+const email = ref('');
+const role = ref<string | number>('');
+const department = ref<string | number>('');
 
-            const formData = new FormData();
-            formData.append('first_name', this.firstName);
-            formData.append('last_name', this.lastName);
-            formData.append('email', this.email || '');
-            formData.append('role', this.role);
-            formData.append('department', this.department);
+const rules = {
+  required: (v: any) => !!v || 'This field is required',
+  optionalEmail: (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email must be valid'
+};
 
-            try {
-                const response = await GeneralController.storeItem('account/create-account', formData);
-                console.log('Account created:', response);
-                if (response.ok) {
-                    this.isSubmit = false;
-                    this.firstName = '';
-                    this.lastName = '';
-                    this.email = '';
-                    this.role = '';
-                    this.department = '';
-                }
-                // Optionally reset form or give success feedback
-            } catch (error) {
-                console.error('Failed to create account:', error);
-                // Handle server errors here (e.g. show error to user)
-            }
-        }
+const submitForm = async () => {
+  const { valid } = await accountForm.value.validate();
+  if (!valid) return;
+
+  isSubmit.value = true;
+  const formData = new FormData();
+  formData.append('first_name', firstName.value);
+  formData.append('last_name', lastName.value);
+  formData.append('email', email.value || '');
+  formData.append('role', String(role.value));
+  formData.append('department', String(department.value));
+
+  try {
+    const response: any = await GeneralController.storeItem('account/create-account', formData);
+    if (response?.ok || response?.status === 200) {
+      alertService.toast('Account created successfully (Clause 5.3)');
+      firstName.value = '';
+      lastName.value = '';
+      email.value = '';
+      role.value = '';
+      department.value = '';
+      accountForm.value.resetValidation();
+      emit('created');
+    } else {
+      alertService.error('Failed to create user account.');
     }
-})
+  } catch (error) {
+    console.error('Failed to create account:', error);
+    alertService.error('Could not create account due to a server error.');
+  } finally {
+    isSubmit.value = false;
+  }
+};
 </script>
+
+<template>
+  <v-container fluid class="pa-4">
+    <div v-if="isSubmit" class="d-flex flex-column justify-center align-center pa-10">
+      <v-progress-circular indeterminate color="primary" size="48" />
+      <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Creating User Account...</p>
+    </div>
+
+    <v-card v-else border elevation="0" rounded="lg" class="pa-6">
+      <h3 class="text-h6 font-weight-bold text-primary mb-4">Register New QMS User (Clause 5.3)</h3>
+      <v-form ref="accountForm" @submit.prevent="submitForm">
+        <v-row density="comfortable">
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="firstName"
+              :rules="[rules.required]"
+              label="First Name*"
+              variant="outlined"
+              density="compact"
+              required
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="lastName"
+              :rules="[rules.required]"
+              label="Last Name*"
+              variant="outlined"
+              density="compact"
+              required
+            />
+          </v-col>
+          <v-col cols="12">
+            <v-text-field
+              v-model="email"
+              :rules="[rules.optionalEmail]"
+              label="Institutional Email Address"
+              variant="outlined"
+              density="compact"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="role"
+              :items="roles"
+              item-title="name"
+              item-value="id"
+              :rules="[rules.required]"
+              label="Assigned QMS Role*"
+              variant="outlined"
+              density="compact"
+              required
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="department"
+              :items="departments"
+              item-title="name"
+              item-value="id"
+              :rules="[rules.required]"
+              label="Department Assignment*"
+              variant="outlined"
+              density="compact"
+              required
+            />
+          </v-col>
+        </v-row>
+
+        <div class="text-right mt-4">
+          <v-btn type="submit" color="primary" variant="flat">
+            Create User Account
+          </v-btn>
+        </div>
+      </v-form>
+    </v-card>
+  </v-container>
+</template>

@@ -1,169 +1,193 @@
-<template>
-    <v-card variant="outlined" elevation="0" class="bg-surface mb-5" rounded="lg">
-        <v-card-item>
-            <div class="d-flex justify-space-between align-center">
-                <v-card-title class="text-h4">Workspace</v-card-title>
-            </div>
-        </v-card-item>
-        <v-divider></v-divider>
-        <v-card-text class="pa-0">
-            <template v-if="contentLoading">
-                <div class="d-flex justify-center align-center pa-5">
-                    <img src="@/assets/images/loading.gif" alt="Loading" />
-                </div>
-            </template>
-            <template v-else>
-                <v-tabs v-model="tab" color="success" class="px-6">
-                    <v-tab value="one" class="font-weight-medium">MY REQUESTS</v-tab>
-                    <v-tab value="two" class="font-weight-medium">SUBMISSIONS</v-tab>
-                    <v-tab value="three" class="font-weight-medium">CREATE REQUEST</v-tab>
-                </v-tabs>
-                <v-window v-model="tab" class="pa-0">
-                    <v-window-item value="one">
-                        <TableRequestList :data="requestList" :headers="tableHeader" @edit="editFormSelected"
-                            @removed="removeFormResponse" @view="viewRequest" />
-                    </v-window-item>
-                    <v-window-item value="two">
-                        <p>sample</p>
-                    </v-window-item>
-                    <v-window-item value="three">
-                        <CreateRequest :formList="formList" @store="storeFormResponse" :formEdit="formSelected" />
-                    </v-window-item>
-                </v-window>
-            </template>
-        </v-card-text>
-    </v-card>
-    <ModalFormEdit v-if="formSelected" v-model="openModel" :formSelected="formSelected" @update="updateFormResponse" />
-    <ViewRequest v-if="formPreview" v-model="openRequestModal" :preview="formPreview" />
-</template>
-<script>
-import AlertService from '@/services/alertService';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import CreateRequest from './components/CreateRequest.vue';
 import ModalFormEdit from './components/ModalFormEdit.vue';
 import TableRequestList from './components/TableRequestList.vue';
-import { FormResponseService } from '@/services/formResponseService';
 import ViewRequest from './components/ViewRequest.vue';
-export default {
-    name: 'Workspace',
-    data() {
-        return {
-            openModel: false,
-            openRequestModal: false,
-            contentLoading: false,
-            tab: 'three',
-            service: new FormResponseService(),
-            formList: [],
-            requestList: [],
-            tableHeader: [
-                { title: 'Control Number', key: 'control_number', align: 'start' },
-                { title: 'Form Name', key: 'form_name', align: 'start' },
-                { title: 'Status', key: 'status', align: 'start' },
-                { title: 'Date Created', key: 'created_at', align: 'start' },
-            ],
-            formSelected: null,
-            formPreview: null
-            // Data properties for workspace can be defined here
-        };
-    },
-    components: {
-        CreateRequest, TableRequestList, ModalFormEdit, ViewRequest
-        // Other components can be registered here
-    },
-    async mounted() {
-        this.contentLoading = true;
-        const formList = await this.getForm();
-        this.contentLoading = false
+import { FormResponseService } from '@/services/formResponseService';
+import alertService from '@/services/alertService';
 
-    },
-    methods: {
-        async getForm() {
-            const formList = await this.service.getFormList()
-            this.formList = formList.formList
-            this.requestList = formList.requestList
-            if (formList.requestList.length > 0) {
-                this.tab = 'one'
-            }
-        },
-        async storeFormResponse(form) {
-            this.contentLoading = true;
-            const formData = new FormData();
-            formData.append('formId', form.formId);
-            formData.append('responses', JSON.stringify(form.data));
-            const result = await AlertService.confirm('Save this Request?')
-            if (result.isConfirmed) {
+const tab = ref('three');
+const contentLoading = ref(false);
+const openModel = ref(false);
+const openRequestModal = ref(false);
 
-                this.service.storeFormResponse(formData).then((res) => {
-                    console.log(res);
-                    this.getForm()
-                    this.contentLoading = false;
-                    AlertService.success('Saved Successfully')
-                }).catch((err) => {
-                    console.error(err);
-                    this.contentLoading = false;
-                })
-            }
-            // Methods for handling workspace actions can be defined here
-        },
-        editFormSelected(form) {
-            this.formSelected = form
-            console.log(form)
-            this.openModel = true
-        },
-        async updateFormResponse(form) {
-            this.contentLoading = true;
-            const formData = new FormData();
-            formData.append('response', form.response);
-            formData.append('responses', JSON.stringify(form.data));
-            const result = await AlertService.confirm('Updated this Request?')
-            if (result.isConfirmed) {
+const formList = ref<any[]>([]);
+const requestList = ref<any[]>([]);
+const formSelected = ref<any>(null);
+const formPreview = ref<any>(null);
 
-                this.service.updateFormResponse(formData).then((res) => {
-                    console.log(res);
-                    this.getForm()
-                    this.contentLoading = false;
-                    AlertService.success('Updated Successfully')
-                }).catch((err) => {
-                    console.error(err);
-                    AlertService.error(err, 'Update Error')
-                    this.contentLoading = false;
-                })
-            } else {
-                this.formSelected = form
-                console.log(form)
-                this.openModel = true
-            }
-        },
-        async removeFormResponse(response) {
-            const formData = new FormData();
-            formData.append('response', response.id);
-            const result = await AlertService.confirm('Removed this Request?')
-            if (result.isConfirmed) {
-                this.contentLoading = true;
-                this.service.removeFormResponse(formData).then((res) => {
-                    console.log(res);
-                    this.getForm()
-                    this.contentLoading = false;
-                    AlertService.success('Updated Successfully')
-                }).catch((err) => {
-                    console.error(err);
-                    AlertService.error(err.error.message, 'Update Error')
-                    this.contentLoading = false;
-                })
-            }
-        },
-        async viewRequest(response) {
-            await this.service.viewResponsePdf(response.id)
-                .then((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    this.openRequestModal = true
-                    this.formPreview = {
-                        pdfLink: url,
-                        control: false
-                    }
-                });
-            console.log(this.formPreview)
+const service = new FormResponseService();
 
-        }
+const tableHeader = [
+  { title: 'Control Number', key: 'control_number', align: 'start' as const },
+  { title: 'Form Name', key: 'form_name', align: 'start' as const },
+  { title: 'Status', key: 'status', align: 'start' as const },
+  { title: 'Date Created', key: 'created_at', align: 'start' as const }
+];
+
+const getForm = async () => {
+  try {
+    const data: any = await service.getFormList();
+    formList.value = data?.formList || [];
+    requestList.value = data?.requestList || [];
+    if (requestList.value.length > 0) {
+      tab.value = 'one';
     }
-}
+  } catch (error) {
+    console.error('Error fetching forms/requests:', error);
+  }
+};
+
+onMounted(async () => {
+  contentLoading.value = true;
+  await getForm();
+  contentLoading.value = false;
+});
+
+const storeFormResponse = async (form: any) => {
+  const confirmed = await alertService.confirm('Save this Form Request?');
+  if (!confirmed.isConfirmed) return;
+
+  contentLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('formId', String(form.formId));
+    formData.append('responses', JSON.stringify(form.data));
+
+    await service.storeFormResponse(formData);
+    alertService.toast('Form request saved successfully.');
+    await getForm();
+  } catch (err: any) {
+    console.error('Store form error:', err);
+    alertService.error('Failed to save form request.');
+  } finally {
+    contentLoading.value = false;
+  }
+};
+
+const editFormSelected = (form: any) => {
+  formSelected.value = form;
+  openModel.value = true;
+};
+
+const updateFormResponse = async (form: any) => {
+  const confirmed = await alertService.confirm('Update this Form Request?');
+  if (!confirmed.isConfirmed) {
+    formSelected.value = form;
+    openModel.value = true;
+    return;
+  }
+
+  contentLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('response', String(form.response));
+    formData.append('responses', JSON.stringify(form.data));
+
+    await service.updateFormResponse(formData);
+    alertService.toast('Form request updated successfully.');
+    await getForm();
+  } catch (err: any) {
+    console.error('Update form error:', err);
+    alertService.error('Failed to update form request.');
+  } finally {
+    contentLoading.value = false;
+  }
+};
+
+const removeFormResponse = async (response: any) => {
+  const confirmed = await alertService.confirm('Remove this Form Request?');
+  if (!confirmed.isConfirmed) return;
+
+  contentLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('response', String(response.id));
+    await service.removeFormResponse(formData);
+    alertService.toast('Request removed successfully.');
+    await getForm();
+  } catch (err: any) {
+    console.error('Remove form error:', err);
+    alertService.error('Failed to remove request.');
+  } finally {
+    contentLoading.value = false;
+  }
+};
+
+const viewRequest = async (response: any) => {
+  try {
+    const blob: any = await service.viewResponsePdf(response.id);
+    const url = URL.createObjectURL(blob);
+    formPreview.value = {
+      pdfLink: url,
+      control: false
+    };
+    openRequestModal.value = true;
+  } catch (error) {
+    console.error('View PDF error:', error);
+    alertService.error('Unable to generate PDF preview.');
+  }
+};
 </script>
+
+<template>
+  <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
+    <v-card-item>
+      <div class="d-flex justify-space-between align-center">
+        <v-card-title class="text-h5 font-weight-bold">FORM REQUESTS WORKSPACE (CLAUSE 7.5)</v-card-title>
+      </div>
+    </v-card-item>
+    <v-divider />
+
+    <v-card-text class="pa-0">
+      <div v-if="contentLoading" class="d-flex justify-center align-center pa-10">
+        <v-progress-circular indeterminate color="primary" size="48" />
+      </div>
+
+      <template v-else>
+        <v-tabs v-model="tab" color="primary" class="px-4 border-b">
+          <v-tab value="one">MY REQUESTS</v-tab>
+          <v-tab value="two">SUBMISSIONS</v-tab>
+          <v-tab value="three">CREATE REQUEST</v-tab>
+        </v-tabs>
+
+        <v-window v-model="tab" class="pa-4">
+          <v-window-item value="one">
+            <TableRequestList
+              :data="requestList"
+              :headers="tableHeader"
+              @edit="editFormSelected"
+              @removed="removeFormResponse"
+              @view="viewRequest"
+            />
+          </v-window-item>
+          
+          <v-window-item value="two">
+            <v-card border elevation="0" class="pa-6 text-center text-secondary">
+              <v-icon size="40" class="mb-2">mdi-file-document-multiple-outline</v-icon>
+              <p class="text-body-1 mb-0">No submission logs available.</p>
+            </v-card>
+          </v-window-item>
+          
+          <v-window-item value="three">
+            <CreateRequest :form-list="formList" @store="storeFormResponse" />
+          </v-window-item>
+        </v-window>
+      </template>
+    </v-card-text>
+  </v-card>
+
+  <ModalFormEdit
+    v-if="formSelected"
+    v-model="openModel"
+    :form-selected="formSelected"
+    @update="updateFormResponse"
+  />
+
+  <ViewRequest
+    v-if="formPreview"
+    v-model="openRequestModal"
+    :preview="formPreview"
+  />
+</template>

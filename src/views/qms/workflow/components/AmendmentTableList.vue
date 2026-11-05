@@ -1,148 +1,147 @@
-<template>
-    <v-container>
-        <!-- Toolbar Header -->
-        <v-toolbar flat color="white" class="mb-4">
-            <v-toolbar-title>📄 List of Amendments</v-toolbar-title>
+<script setup lang="ts">
+import { ref, computed } from 'vue';
 
-            <!-- Status Filter -->
-            <v-select v-model="statusFilter" :items="statusOptions" label="Filter by Status" dense outlined class="mr-2"
-                style="max-width: 180px;"></v-select>
+const props = defineProps<{
+  data: any[];
+  headers?: any[];
+}>();
 
-            <!-- Search -->
-            <v-text-field v-model="search" label="Search" dense outlined class="mr-2"
-                style="max-width: 200px;"></v-text-field>
+defineEmits<{
+  (e: 'view', item: any): void;
+  (e: 'submit', id: number | string): void;
+  (e: 'remove', id: number | string): void;
+}>();
 
-            <!-- Export Button -->
-            <v-btn color="primary" @click="exportCSV">
-                Export CSV
-            </v-btn>
-        </v-toolbar>
+const search = ref('');
+const statusFilter = ref<string | null>(null);
+const statusOptions = ['Approved', 'Pending', 'Rejected'];
 
-        <!-- Data Table -->
-        <v-data-table :items="filteredData" :headers="headers" class="elevation-1" :search="search">
-            <!-- Date formatting -->
-            <template v-slot:item.updated_at="{ item }">
-                {{ new Date(item.updated_at).toLocaleString() }}
-            </template>
-            <!-- Status Badge -->
-            <template v-slot:item.status="{ item }">
-                <v-chip :color="getStatusColor(item.status)">
-                    {{ item.status }}
-                </v-chip>
-            </template>
-            <!-- Status Badge -->
-            <template v-slot:item.createdAt="{ item }">
-                <v-chip color="primary">
-                    {{ item.createdAt }}
-                </v-chip>
-            </template>
-            <template v-slot:item.amendmentControl="{ item }">
-                <router-link class="custom-link" :to="`/qms/approval-workflow/view/${item.id}`">{{ item.amendmentControl }}</router-link>
-            </template>
-            <!--Draft Action Buttons -->
-            <template v-slot:item.draftAction="{ item }">
-                <v-menu>
-                    <template v-slot:activator="{ props }">
-                        <v-btn variant="tonal" color="primary" v-bind="props">
-                            ACTION
-                        </v-btn>
-                    </template>
-                    <v-list border rounded="lg" density="compact" class="py-0" aria-busy="true"
-                        aria-label="transaction data">
+const defaultHeaders = [
+  { title: 'Status', key: 'status', align: 'start' as const },
+  { title: 'Amendment Control', key: 'amendmentControl', align: 'start' as const },
+  { title: 'Procedure / Form Name', key: 'name', align: 'start' as const },
+  { title: 'Category', key: 'reference', align: 'start' as const },
+  { title: 'Submission Date', key: 'submittedData', align: 'start' as const },
+  { title: 'Actions', key: 'draftAction', align: 'center' as const, sortable: false }
+];
 
-                        <v-list-item @click="$emit('view', item)">
-                            <v-list-item-title>View</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item @click="$emit('submit', item.id)">
-                            <v-list-item-title>Submit</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item @click="$emit('remove', item.id)">
-                            <v-list-item-title>Remove</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
-            </template>
+const headersList = computed(() => props.headers || defaultHeaders);
 
-        </v-data-table>
+const filteredData = computed(() => {
+  if (!props.data) return [];
+  if (!statusFilter.value) return props.data;
+  return props.data.filter(
+    (item) => item.status?.toLowerCase() === statusFilter.value?.toLowerCase()
+  );
+});
 
-    </v-container>
-</template>
-<style scoped>
-.v-data-table thead {
-    display: table-header-group !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
+const getStatusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'approved': return 'success';
+    case 'pending': return 'warning';
+    case 'rejected': return 'error';
+    default: return 'secondary';
+  }
+};
 
-.v-data-table thead th {
-    background-color: #ec0303;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    color: #333;
-}
+const exportCSV = () => {
+  const csvContent = [
+    ['ID', 'Amendment Control', 'Model', 'Description of Changes', 'Updated At', 'Status'],
+    ...filteredData.value.map((row) => [
+      row.id,
+      row.amendmentControl || row.amendment_control,
+      row.model || row.reference,
+      `"${(row.descriptionOfChanges || row.description_of_changes || '').replace(/"/g, '""')}"`,
+      new Date(row.updated_at || Date.now()).toLocaleString(),
+      row.status
+    ])
+  ]
+    .map((e) => e.join(','))
+    .join('\n');
 
-.custom-link {
-    color: blue;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s;
-}
-
-.custom-link:hover {
-    color: darkblue;
-}
-</style>
-<script>
-export default {
-    name: 'AmendmentTableList',
-    props: {
-        data: {
-            type: Array,
-            required: true
-        },
-        headers: Object
-    },
-    data() {
-        return {
-            search: '',
-            statusFilter: null,
-            statusOptions: ['Approved', 'Pending', 'Rejected'],
-        };
-    },
-    computed: {
-        filteredData() {
-            if (!this.statusFilter) return this.data;
-            return this.data.filter(item =>
-                item.status.toLowerCase() === this.statusFilter.toLowerCase()
-            );
-        }
-    },
-    methods: {
-        getStatusColor(status) {
-            return status?.toLowerCase() == 'approved' ? 'success' : (status?.toLowerCase() == 'pending' ? 'warning' : (status?.toLowerCase() == 'rejected' ? 'error' : 'grey'))
-        },
-        exportCSV() {
-            const csvContent = [
-                ['ID', 'Amendment Control', 'Model', 'Description of Changes', 'Updated At', 'Status'],
-                ...this.filteredData.map(row => [
-                    row.id,
-                    row.amendment_control,
-                    row.model,
-                    row.description_of_changes,
-                    new Date(row.updated_at).toLocaleString(),
-                    row.status
-                ])
-            ]
-                .map(e => e.join(','))
-                .join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', 'amendments.csv');
-            link.click();
-        }
-    }
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'qms_amendments.csv');
+  link.click();
+  URL.revokeObjectURL(link.href);
 };
 </script>
+
+<template>
+  <v-container fluid class="pa-0">
+    <v-toolbar flat color="transparent" class="mb-4">
+      <v-toolbar-title class="text-h6 font-weight-bold px-0">List of Amendments</v-toolbar-title>
+      <v-spacer />
+      
+      <v-select
+        v-model="statusFilter"
+        :items="statusOptions"
+        label="Filter Status"
+        variant="outlined"
+        density="compact"
+        hide-details
+        clearable
+        class="mr-2"
+        style="max-width: 160px"
+      />
+
+      <v-text-field
+        v-model="search"
+        placeholder="Search..."
+        variant="outlined"
+        density="compact"
+        hide-details
+        prepend-inner-icon="mdi-magnify"
+        class="mr-2"
+        style="max-width: 200px"
+      />
+
+      <v-btn color="primary" variant="flat" size="small" @click="exportCSV">
+        Export CSV
+      </v-btn>
+    </v-toolbar>
+
+    <v-card border elevation="0" rounded="lg">
+      <v-data-table
+        :items="filteredData"
+        :headers="headersList"
+        :search="search"
+        class="elevation-0"
+      >
+        <template v-slot:item.status="{ item }">
+          <v-chip :color="getStatusColor(item.status)" size="small" label>
+            {{ item.status }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.amendmentControl="{ item }">
+          <router-link :to="`/qms/approval-workflow/view/${item.id}`" class="text-primary font-weight-bold text-decoration-none">
+            {{ item.amendmentControl || item.amendment_control }}
+          </router-link>
+        </template>
+
+        <template v-slot:item.draftAction="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props: menuProps }">
+              <v-btn variant="tonal" color="primary" size="small" v-bind="menuProps">
+                Action
+              </v-btn>
+            </template>
+            <v-list border density="compact">
+              <v-list-item @click="$emit('view', item)">
+                <v-list-item-title>View Details</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$emit('submit', item.id)">
+                <v-list-item-title class="text-success">Submit Amendment</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$emit('remove', item.id)">
+                <v-list-item-title class="text-error">Remove</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
+      </v-data-table>
+    </v-card>
+  </v-container>
+</template>

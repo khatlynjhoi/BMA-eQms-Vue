@@ -1,20 +1,18 @@
 import { defineStore } from 'pinia';
 import config from '@/config';
 
-export const useCustomizerStore = defineStore({
-  id: 'customizer',
+export const useCustomizerStore = defineStore('customizer', {
   state: () => ({
     Sidebar_drawer: config.Sidebar_drawer,
     Customizer_drawer: config.Customizer_drawer,
     mini_sidebar: config.mini_sidebar,
-    setHorizontalLayout: config.setHorizontalLayout, // Horizontal layout
+    setHorizontalLayout: config.setHorizontalLayout,
     actTheme: config.actTheme,
     fontTheme: config.fontTheme,
     inputBg: config.inputBg,
     boxed: config.boxed
   }),
 
-  getters: {},
   actions: {
     SET_SIDEBAR_DRAWER() {
       this.Sidebar_drawer = !this.Sidebar_drawer;
@@ -25,7 +23,6 @@ export const useCustomizerStore = defineStore({
     SET_CUSTOMIZER_DRAWER(payload: boolean) {
       this.Customizer_drawer = payload;
     },
-
     SET_LAYOUT(payload: boolean) {
       this.setHorizontalLayout = payload;
     },

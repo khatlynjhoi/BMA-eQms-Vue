@@ -1,26 +1,34 @@
-import { api } from './api'
-
+import { api } from './api';
+import type { QualityObjective } from '@/types';
 
 export class QualityObjectiveService {
     private request = (url: string, options?: RequestInit) =>
         api(url, options).then(res => res.json());
 
-    getFormList = (): Promise<{ id: number; name: string }[]> =>
-        this.request('form-response/retrieve-build-forms');
-    viewResponsePdf = (response: string): Promise<Blob> =>
-        api('form-response/preview-response?response=' + response, {
-            method: 'GET'
-        }).then(res => res.blob());
-    retrieveData = (link: string, formData: any) =>
-        this.request(link, { method: 'POST', body: formData });
-    viewQualityObjective = (formData: any) =>
-        this.request('quality-objective/view-objective', { method: 'POST', body: formData });
-    storeFormResponse = (formData: any) =>
-        this.request('form-response/store-form-response', { method: 'POST', body: formData });
+    getObjectivesList = (): Promise<QualityObjective[]> =>
+        this.request('quality-objective/list');
 
-    updateFormResponse = (formData: any) =>
-        this.request('form-response/update-form-response', { method: 'POST', body: formData });
+    viewQualityObjective = (id: string | number): Promise<QualityObjective> =>
+        this.request('quality-objective/view-objective', {
+            method: 'POST',
+            body: JSON.stringify({ id })
+        });
 
-    removeFormResponse = (formData: any) =>
-        this.request('form-response/remove-form-response', { method: 'POST', body: formData });
+    storeObjective = (objectiveData: Partial<QualityObjective>): Promise<any> =>
+        this.request('quality-objective/store-objective', {
+            method: 'POST',
+            body: JSON.stringify(objectiveData)
+        });
+
+    updateObjective = (objectiveData: Partial<QualityObjective>): Promise<any> =>
+        this.request('quality-objective/update-objective', {
+            method: 'POST',
+            body: JSON.stringify(objectiveData)
+        });
+
+    removeObjective = (id: string | number): Promise<any> =>
+        this.request('quality-objective/remove-objective', {
+            method: 'POST',
+            body: JSON.stringify({ id })
+        });
 }

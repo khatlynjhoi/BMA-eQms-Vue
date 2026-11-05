@@ -1,220 +1,216 @@
-<template>
-
-
-    <v-tabs v-model="formTab" color="success">
-        <v-tab value="one" class="font-weight-medium">LIST OF FORM</v-tab>
-        <v-tab value="two" class="font-weight-medium">ADD FORM</v-tab>
-    </v-tabs>
-    <v-window v-model="formTab">
-        <v-window-item value="one">
-            <div v-if="formList !== null">
-                <div v-if="formList.length > 0" class="form-list-container">
-                    <v-list border class="" aria-busy="true" aria-label="project list">
-                        <v-list-item class="py-2 px-4" v-for="(item, index) in formList" :key="index" :value="item.id"
-                            rounded="md" @click="viewForm(encrypt(item.id))">
-                            <span class="text-body-1 fw-bolder text-success">{{ item.form_code }} | </span>
-                            <span class="text-body-2">{{ item.form_name }}</span>
-                        </v-list-item>
-                    </v-list>
-                </div>
-            </div>
-
-            <!--  <FormModalView v-model="openModel" /> -->
-            <FormModalView v-if="formInfo" v-model="openModel" :formDetails="formInfo" :formData="formData1"
-                @update="updateForm" />
-        </v-window-item>
-        <v-window-item value="two" class="ps-5 pe-5 pt-4">
-            <v-alert v-if="errorMessages != null" type="error" colored-border elevation="2" dismissible>
-                An error occurred while saving your data. <br>
-                <small color="error">{{ errorMessages }}</small>
-            </v-alert>
-            <label for="ADD" class="text-subtitle-1 text-success text-h3">ADD FORMS</label>
-            <template v-if="formLoader">
-                <div class="d-flex flex-column justify-center align-center pa-5">
-                    <img src="@/assets/images/formLoader.gif" alt="Loading" />
-                    <p class="h3 text-primary font-weight-bold mt-3">LOADING...</p>
-                </div>
-            </template>
-            <v-form v-else @submit.prevent="submitForm">
-                <v-row dense>
-                    <!-- Form Code -->
-                    <v-col cols="12">
-                        <v-text-field v-model="formData.formCode" label="FORM CODE*" placeholder="e.g. ADM-001"
-                            variant="outlined" density="comfortable" color="success" required hide-details="auto"
-                            class="mb-4"></v-text-field>
-                    </v-col>
-                    <!-- Form Name -->
-                    <v-col cols="12">
-                        <v-text-field v-model="formData.formName" label="FORM NAME*" placeholder="Enter form name"
-                            variant="outlined" density="comfortable" color="success" required hide-details="auto"
-                            class="mb-4"></v-text-field>
-                    </v-col>
-                    <!-- Form Status -->
-                    <v-col cols="12">
-                        <v-select v-model="formData.formStatus" label="FORM STATUS*" :items="[
-                            { title: 'GENERAL FORMS', value: '1' },
-                            { title: 'DEPARTMENTAL FORMS', value: '0' }
-                        ]" variant="outlined" density="comfortable" color="success" :error="!!errors['status']"
-                            :error-messages="errors['status']" hide-details="auto" required class="mb-4"></v-select>
-                    </v-col>
-
-                    <!-- Retention Period -->
-                    <v-col cols="12">
-                        <v-select v-model="formData.formRetention" label="Retention Period*" :items="[
-                            { title: 'Permanent', value: 'Permanent' },
-                            { title: '1 Year', value: '1 Year' },
-                            { title: '2 Years', value: '2 Years' },
-                            { title: '3 Years', value: '3 Years' },
-                            { title: '4 Years', value: '4 Years' },
-                            { title: '5 Years', value: '5 Years' },
-                            { title: 'Until Superseded', value: 'Until Superseded' }
-                        ]" variant="outlined" density="comfortable" color="success" hide-details="auto" required
-                            class="mb-4"></v-select>
-                    </v-col>
-
-                    <!-- File Input -->
-                    <v-col cols="12">
-                        <v-file-input v-model="formData.formFile" label="Attach PDF file" accept=".pdf"
-                            variant="outlined" density="comfortable" color="success" prepend-icon="mdi-file-pdf-box"
-                            show-size :error="!!fileError" :error-messages="fileError" hide-details="auto"
-                            class="mb-4"></v-file-input>
-                    </v-col>
-
-                    <!-- Action Buttons -->
-                    <v-col cols="12" class="pt-4 d-flex justify-end">
-                        <v-btn variant="text" color="grey-darken-1" class="mr-2">Cancel</v-btn>
-                        <v-btn color="success" type="submit" elevation="1" size="large">
-                            Submit Form
-                        </v-btn>
-                    </v-col>
-                </v-row>
-            </v-form>
-        </v-window-item>
-    </v-window>
-</template>
-<script>
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
 import FormModalView from '../widgets/FormModalView.vue';
 import { GeneralController } from '@/stores/GeneralController';
-export default defineComponent({
-    name: 'FormProcedure',
-    components: {
-        FormModalView
-    },
-    props: {
-        procedure: String,
-        formList: {
-            type: Object
-        }
-    },
-    data() {
-        const formTab = this.formList.length > 0 ? null : 'two';
-        const formData = {
-            formName: null,
-            formCode: null,
-            formRetention: null,
-            formStatus: null,
-            formFile: [],
-        }
-        return {
-            openModel: false,
-            formLoader: false,
-            formData,
-            formInfo: {
-                isModalLoading: true,
-                content: [],
-                link: null
-            },
-            formTab,
-            selectedFile: [],
-            fileError: '',
-            errors: [],
-            errorMessages: null,
-            formData1: []
-        }
-    },
-    methods: {
-        async viewForm(form) {
-            this.openModel = true
-            const response = await GeneralController.retrieveGetFile('forms/view?link=' + form);
-            const blob = new Blob([response], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const formDetails = await GeneralController.retrieveData('forms/retrieve', { form: form }, 'form')
-            this.formInfo = {
-                content: formDetails,
-                link: url,
-                isModalLoading: false,
-            }
-            this.formData1 = {
-                formID: formDetails?.id,
-                formName: formDetails?.formName,
-                formCode: formDetails?.formCode,
-                formRetention: formDetails?.formRetention,
-                formStatus: formDetails?.formStatus,
-            }
-            console.log(this.formInfo)
-        },
-        encrypt(data) {
-            return btoa(data)
-        },
-        async submitForm() {
-            const formData = new FormData();
-            this.formLoader = true;
-            this.errorMessages = null;
-            formData.append('procedure', this.procedure);
-            // append normal fields
-            for (let key in this.formData) {
-                formData.append(key, this.formData[key]);
-            }
-            // ✅ append file properly
-            /* if (this.formData.formFile && this.formData.formFile.length > 0) {
-                formData.append('formFile', this.formData.formFile[0]);
-            } */
-            try {
-                const response = await GeneralController.storeItemFiles('forms/store-forms', formData);
-                console.log(response.formList);
-                this.formTab = 'one';
-                // ❗ emit instead of mutating prop
-                this.$emit('update:formList', response.formList);
-                this.alertSuccess = true;
-                // reset form
-                this.formData = {
-                    formName: null,
-                    formCode: null,
-                    formRetention: null,
-                    formStatus: null,
-                    formFile: [],
-                };
-            } catch (error) {
-                console.log(error);
-                const errorMessage = JSON.parse(error.message)
-                // ✅ safer error handling (works for Axios & others)
-                const data = error?.response?.data || null;
-                if (data) {
+import alertService from '@/services/alertService';
 
-                    this.errorMessages = data.message;
-                    // optional: get specific field error
-                    if (data.errors?.formFile) {
-                        this.fileError = data.errors.formFile[0];
-                    }
-                } else {
-                    this.errorMessages = errorMessage.message;
-                }
-            } finally {
-                this.formLoader = false;
-            }
-        },
-        async updateForm(data) {
-            await GeneralController.storeItemFiles('forms/update', data)
-                .then(response => {
-                    console.log(response.formList)
-                    this.$emit('update:formList', response.formList);
-                    this.openModel = false
-                })
-                .catch(error => {
-                    console.log(error)
-                })
-        }
-    }
+const props = defineProps<{
+  procedure: string | number;
+  formList?: any[];
+}>();
+
+const emit = defineEmits(['update:formList']);
+
+const formTab = ref(props.formList && props.formList.length > 0 ? 'one' : 'two');
+const openModel = ref(false);
+const formLoader = ref(false);
+const errorMessages = ref<string | null>(null);
+
+const formData = ref({
+  formName: '',
+  formCode: '',
+  formRetention: '3 Years',
+  formStatus: '1',
+  formFile: [] as any[]
 });
+
+const formInfo = ref({
+  isModalLoading: true,
+  content: null as any,
+  link: null as string | null
+});
+
+const formDataEdit = ref<any>({});
+
+const safeEncrypt = (data: any) => btoa(String(data));
+
+const viewForm = async (formId: any) => {
+  openModel.value = true;
+  formInfo.value.isModalLoading = true;
+  const encryptedId = safeEncrypt(formId);
+
+  try {
+    const controller = new GeneralController();
+    const response = await controller.retrieveFile(encryptedId, 'forms/view');
+    const blob = response instanceof Blob
+      ? response
+      : new Blob([new Uint8Array(response)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const formDetails: any = await controller.retrieveData('forms/retrieve', { form: encryptedId }, 'form');
+
+    formInfo.value = {
+      content: formDetails,
+      link: url,
+      isModalLoading: false
+    };
+
+    formDataEdit.value = {
+      formID: formDetails?.id,
+      formName: formDetails?.formName,
+      formCode: formDetails?.formCode,
+      formRetention: formDetails?.formRetention,
+      formStatus: formDetails?.formStatus
+    };
+  } catch (error) {
+    console.error('Error fetching form file:', error);
+    formInfo.value.isModalLoading = false;
+  }
+};
+
+const submitForm = async () => {
+  if (!formData.value.formCode || !formData.value.formName) {
+    alertService.error('Please enter all required form fields.');
+    return;
+  }
+
+  formLoader.value = true;
+  errorMessages.value = null;
+
+  try {
+    const payload = new FormData();
+    payload.append('procedure', String(props.procedure));
+    payload.append('formName', formData.value.formName);
+    payload.append('formCode', formData.value.formCode);
+    payload.append('formRetention', formData.value.formRetention);
+    payload.append('formStatus', formData.value.formStatus);
+
+    if (formData.value.formFile && formData.value.formFile.length > 0) {
+      const file = Array.isArray(formData.value.formFile) ? formData.value.formFile[0] : formData.value.formFile;
+      payload.append('formFile', file);
+    }
+
+    const controller = new GeneralController();
+    const response: any = await GeneralController.storeItemFiles('forms/store-forms', payload);
+
+    alertService.toast('Form attached successfully.');
+    emit('update:formList', response.formList || []);
+    formTab.value = 'one';
+
+    formData.value = {
+      formName: '',
+      formCode: '',
+      formRetention: '3 Years',
+      formStatus: '1',
+      formFile: []
+    };
+  } catch (error: any) {
+    console.error('Submit form error:', error);
+    errorMessages.value = error?.message || 'Failed to save form record.';
+  } finally {
+    formLoader.value = false;
+  }
+};
+
+const updateForm = async (updatedData: FormData) => {
+  try {
+    const controller = new GeneralController();
+    const response: any = await GeneralController.storeItemFiles('forms/update', updatedData);
+    emit('update:formList', response.formList || []);
+    openModel.value = false;
+    alertService.toast('Form details updated.');
+  } catch (error) {
+    console.error('Update form error:', error);
+  }
+};
 </script>
+
+<template>
+  <div>
+    <v-tabs v-model="formTab" color="primary" class="mb-4">
+      <v-tab value="one" class="font-weight-medium">LIST OF FORMS</v-tab>
+      <v-tab value="two" class="font-weight-medium">ADD FORM</v-tab>
+    </v-tabs>
+
+    <v-window v-model="formTab">
+      <!-- Form List View -->
+      <v-window-item value="one">
+        <v-list v-if="formList && formList.length > 0" border rounded class="py-0">
+          <v-list-item
+            v-for="(item, index) in formList"
+            :key="index"
+            class="py-3 px-4 border-b cursor-pointer"
+            @click="viewForm(item.id)"
+          >
+            <span class="text-subtitle-1 font-weight-bold text-primary">{{ item.form_code }}</span>
+            <span class="text-body-2 mx-2">|</span>
+            <span class="text-body-1">{{ item.form_name }}</span>
+          </v-list-item>
+        </v-list>
+        <v-card v-else border elevation="0" class="pa-6 text-center text-secondary">
+          <v-icon size="40" class="mb-2">mdi-file-document-outline</v-icon>
+          <p class="text-body-1 mb-0">No operational forms linked to this procedure.</p>
+        </v-card>
+
+        <FormModalView
+          v-if="formInfo.content"
+          v-model="openModel"
+          :form-details="formInfo"
+          :form-data="formDataEdit"
+          @update="updateForm"
+        />
+      </v-window-item>
+
+      <!-- Add Form Entry -->
+      <v-window-item value="two" class="pa-4">
+        <v-alert v-if="errorMessages" type="error" variant="tonal" class="mb-4" closable>
+          {{ errorMessages }}
+        </v-alert>
+
+        <div v-if="formLoader" class="d-flex flex-column justify-center align-center pa-8">
+          <v-progress-circular indeterminate color="primary" size="40" />
+          <p class="text-subtitle-2 text-primary font-weight-bold mt-2">Saving Form Data...</p>
+        </div>
+
+        <v-form v-else @submit.prevent="submitForm">
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="formData.formCode" label="Form Code*" placeholder="e.g. ADM-001" variant="outlined" density="compact" class="mb-3" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="formData.formName" label="Form Name*" placeholder="Enter form title" variant="outlined" density="compact" class="mb-3" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="formData.formStatus"
+                label="Scope / Classification*"
+                :items="[
+                  { title: 'General Forms', value: '1' },
+                  { title: 'Departmental Forms', value: '0' }
+                ]"
+                variant="outlined"
+                density="compact"
+                class="mb-3"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="formData.formRetention"
+                label="Retention Period (Clause 7.5.3)*"
+                :items="['Permanent', '1 Year', '2 Years', '3 Years', '5 Years', 'Until Superseded']"
+                variant="outlined"
+                density="compact"
+                class="mb-3"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-file-input v-model="formData.formFile" label="Attach Template PDF File" accept=".pdf" variant="outlined" density="compact" prepend-icon="mdi-file-pdf-box" class="mb-4" />
+            </v-col>
+            <v-col cols="12" class="text-right">
+              <v-btn type="submit" color="primary" variant="flat">Submit Form</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-window-item>
+    </v-window>
+  </div>
+</template>

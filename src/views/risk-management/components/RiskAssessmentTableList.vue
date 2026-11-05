@@ -1,129 +1,92 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+const props = defineProps<{
+  data: any[];
+  headers?: any[];
+}>();
+
+const emit = defineEmits<{
+  (e: 'add'): void;
+  (e: 'edit', item: any): void;
+  (e: 'removed', item: any): void;
+}>();
+
+const search = ref('');
+
+const defaultHeaders = [
+  { title: 'Action', key: 'actionBtn', align: 'start' as const, sortable: false },
+  { title: 'Hazards / Risks Description', key: 'risks_description', align: 'start' as const },
+  { title: 'Existing Control Measures', key: 'control_measures', align: 'start' as const },
+  { title: 'Consequence', key: 'consequence', align: 'start' as const },
+  { title: 'Likelihood', key: 'likelihood', align: 'start' as const },
+  { title: 'Target Group at Risk', key: 'who_at_risk', align: 'start' as const }
+];
+
+const headersList = computed(() => props.headers || defaultHeaders);
+
+const filteredData = computed(() => {
+  if (!props.data) return [];
+  if (!search.value) return props.data;
+  const term = search.value.toLowerCase();
+  return props.data.filter(
+    (item) =>
+      item.risks_description?.toLowerCase().includes(term) ||
+      item.control_measures?.toLowerCase().includes(term)
+  );
+});
+</script>
+
 <template>
-    <v-toolbar flat class="d-flex justify-space-between align-center">
-        <v-toolbar-title class="text-h6 font-weight-bold">
-            LIST OF RISK DESCRIPTION
-        </v-toolbar-title>
+  <v-container fluid class="pa-0">
+    <v-toolbar flat color="transparent" class="d-flex justify-space-between align-center mb-4">
+      <v-toolbar-title class="text-h6 font-weight-bold px-0">
+        REGISTERED HAZARD & RISK LINES
+      </v-toolbar-title>
 
-        <div class="d-flex align-center">
-            <v-text-field v-model="search" label="Search" variant="outlined" hide-details density="compact" class="mr-3"
-                style="width: 250px;"></v-text-field>
+      <div class="d-flex align-center">
+        <v-text-field
+          v-model="search"
+          placeholder="Search risks..."
+          variant="outlined"
+          density="compact"
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          style="width: 250px"
+          class="mr-3"
+        />
 
-            <v-btn color="primary" variant="flat" class="mr-3" @click="$emit('add')">
-                Add Risks
-            </v-btn>
-        </div>
+        <v-btn color="primary" variant="flat" size="small" @click="emit('add')">
+          <v-icon class="mr-1">mdi-plus</v-icon> Add Hazard Line
+        </v-btn>
+      </div>
     </v-toolbar>
 
-
-    <!-- Data Table -->
-    <v-data-table :items="filteredData" :headers="headers" class="elevation-1" :search="search">
-
-        <!-- Status Badge -->
-        <template v-slot:item.status="{ item }">
-            <v-chip :color="getStatusColor(item.status)">
-                {{ item.status }}
-            </v-chip>
-        </template>
-        <!--Draft Action Buttons -->
+    <v-card border elevation="0" rounded="lg">
+      <v-data-table
+        :items="filteredData"
+        :headers="headersList"
+        :search="search"
+        class="elevation-0 text-body-2"
+      >
         <template v-slot:item.actionBtn="{ item }">
-            <v-menu>
-                <template v-slot:activator="{ props }">
-                    <v-btn variant="tonal" color="primary" v-bind="props">
-                        ACTION
-                    </v-btn>
-                </template>
-                <v-list border rounded="lg" density="compact" class="py-0" aria-busy="true"
-                    aria-label="transaction data">
-
-                    <v-list-item @click="$emit('edit', item)">
-                        <v-list-item-title>EDIT</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="$emit('removed', item)">
-                        <v-list-item-title>REMOVE</v-list-item-title>
-                    </v-list-item>
-                    <!-- <v-list-item @click="$emit('remove', item.id)">
-                            <v-list-item-title>Remove</v-list-item-title>
-                        </v-list-item> -->
-                </v-list>
-            </v-menu>
+          <v-menu>
+            <template v-slot:activator="{ props: menuProps }">
+              <v-btn variant="tonal" color="primary" size="small" v-bind="menuProps">
+                Action
+              </v-btn>
+            </template>
+            <v-list border density="compact">
+              <v-list-item @click="emit('edit', item)">
+                <v-list-item-title class="text-info">Edit Line</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="emit('removed', item)">
+                <v-list-item-title class="text-error">Remove</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
-
-    </v-data-table>
+      </v-data-table>
+    </v-card>
+  </v-container>
 </template>
-
-<script>
-export default {
-    name: 'RiskTableList',
-    emits: ['add', 'edit', 'removed',],
-    props: {
-        data: {
-            type: Array,
-            required: true
-        },
-        headers: Object
-    },
-    data() {
-        return {
-            search: '',
-            statusFilter: null,
-        };
-    },
-    computed: {
-        filteredData() {
-            if (!this.statusFilter) return this.data;
-            return this.data.filter(item =>
-                item.status.toLowerCase() === this.statusFilter.toLowerCase()
-            );
-        }
-    },
-    methods: {
-        exportCSV() {
-            const csvContent = [
-                ['ACADEMIC YEAR', 'DEPARTMENT', 'Activity/Process/Procedure:', 'Hazards/Risks Description', 'Who/What is at Risks?', 'Action'],
-                ...this.filteredData.map(row => [
-                    row.id,
-                    row.amendment_control,
-                    row.model,
-                    row.description_of_changes,
-                    new Date(row.updated_at).toLocaleString(),
-                    row.status
-                ])
-            ]
-                .map(e => e.join(','))
-                .join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', 'amendments.csv');
-            link.click();
-        }
-    }
-};
-</script>
-<!-- <style scoped>
-.v-data-table thead {
-    display: table-header-group !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.v-data-table thead th {
-    background-color: #ec0303;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    color: #333;
-}
-
-.custom-link {
-    color: blue;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s;
-}
-
-.custom-link:hover {
-    color: darkblue;
-}
-</style> -->

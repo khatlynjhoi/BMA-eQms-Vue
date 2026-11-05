@@ -4,102 +4,176 @@ export interface menu {
   icon?: string;
   to?: string;
   divider?: boolean;
-  getURL?: boolean;
   chip?: string;
   chipColor?: string;
   chipVariant?: string;
-  chipIcon?: string;
   children?: menu[];
   disabled?: boolean;
   type?: string;
   subCaption?: string;
 }
 
-let sidebarItem: menu[] = [
+const sidebarItem: menu[] = [
+  // -------------------------------------------------------------
+  // DASHBOARD
+  // -------------------------------------------------------------
   { header: 'Dashboard' },
   {
     title: 'Dashboard',
-    icon: 'home-trend', // Keep as is, it's a good general dashboard icon
-    to: '/dashboard/v2'
+    icon: 'custom-home-outline',
+    to: '/dashboard'
   },
-  { header: 'QMS' },
+
+  // -------------------------------------------------------------
+  // CONTEXT & GOVERNANCE (Clause 4 & Clause 5)
+  // -------------------------------------------------------------
+  { header: 'Context & Governance' },
   {
-    title: 'Process and Forms',
-    icon: 'custom-folder-file', // Represents a repository of processes and forms
-    to: '/qms/process-forms' // Updated path for clarity
+    title: 'Context & Climate',
+    icon: 'custom-globe-outline',
+    to: '/context/climate',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+  {
+    title: 'Interested Parties',
+    icon: 'custom-users-outline',
+    to: '/context/stakeholders',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+  {
+    title: 'Quality Policy & Ethics',
+    icon: 'custom-shield-outline',
+    to: '/context/policy-culture',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+
+  // -------------------------------------------------------------
+  // RISK & OPPORTUNITIES (Clause 6.1 & Clause 6.2)
+  // -------------------------------------------------------------
+  { header: 'Risk & Opportunities' },
+  {
+    title: 'Risk Management',
+    icon: 'custom-warning-outline',
+    children: [
+      {
+        title: 'Risk Assessment',
+        to: '/risk-management/threats'
+      },
+      {
+        title: 'Opportunity Register',
+        to: '/risk-management/opportunities',
+        chip: '2026',
+        chipColor: 'primary',
+        chipVariant: 'tonal'
+      }
+    ]
+  },
+  {
+    title: 'Quality Objectives',
+    icon: 'custom-target-outline',
+    to: '/quality-objectives/monitoring'
+  },
+
+  // -------------------------------------------------------------
+  // DOCUMENT & CHANGE CONTROL (Clause 6.3 & Clause 7.5)
+  // -------------------------------------------------------------
+  { header: 'Document & Change Control' },
+  {
+    title: 'Process & Forms',
+    icon: 'custom-document-text-outline',
+    to: '/qms/process-forms'
   },
   {
     title: 'Version Control Logs',
-    icon: 'custom-git-history', // Represents versioning and history
-    to: '/qms/version-logs' // Updated path for clarity
+    icon: 'custom-history-outline',
+    to: '/qms/version-logs'
   },
   {
-    title: 'Approval Workflow',
-    icon: 'custom-flow-check', // Represents a workflow with approval/completion
-    to: '/qms/approval-workflow' // Updated path for clarity
+    title: 'Approval Workflow (MOC)',
+    icon: 'custom-git-fork-outline',
+    to: '/qms/approval-workflow',
+    subCaption: 'Management of Change'
   },
-  { header: 'Reports' },
+
+  // -------------------------------------------------------------
+  // REPORTS & OPERATIONS (Clause 8)
+  // -------------------------------------------------------------
+  { header: 'Reports & Operations' },
   {
     title: 'Workspace',
-    icon: 'custom-upload-document', // Represents submitting documents/reports
-    to: '/reports/workspace' // Updated path for clarity
+    icon: 'custom-briefcase-outline',
+    to: '/reports/workspace'
   },
   {
-    title: 'Submission',
-    icon: 'custom-upload-document', // Represents submitting documents/reports
-    to: '/reports/submission' // Updated path for clarity
+    title: 'Submissions',
+    icon: 'custom-send-outline',
+    to: '/reports/submission'
   },
   {
-    title: 'Track My Submission', // Renamed from 'Register' for clarity based on previous discussion
-    icon: 'custom-list-status', // Represents tracking or status of items
-    to: '/reports/track-submission' // Updated path for clarity
+    title: 'Track My Submission',
+    icon: 'custom-search-outline',
+    to: '/reports/track-submission'
   },
-  { header: 'Quality Objectives' }, // New header based on previous discussion
-  {
-    title: 'Monitoring',
-    icon: 'custom-target-chart', // Represents objectives and monitoring progress
-    to: '/quality-objectives/monitoring' // New path
-  },
-  { header: 'Risk Management' }, // New header based on previous discussion
-  {
-    title: 'Assessment & Mitigation',
-    icon: 'custom-shield-risk', // Represents risk and mitigation
-    to: '/risk/risk-management' // New path
-  },
-  /*  { header: 'Others' },
-   {
-     title: 'Sample Page',
-     icon: 'custom-sample', // Keep as is
-     to: '/starter'
-   }, */
-];
-const userData = localStorage.getItem('user');
-const storedProfile = userData ? JSON.parse(userData) : null;
-const isAdmin = storedProfile.roleID
-if (isAdmin === 1) {
-  sidebarItem.push(
-    { header: 'System Management' },
-    {
-      title: 'Account',
-      icon: 'custom-sample',
-      to: '/manage/accounts'
-    },
-    {
-      title: 'Roles',
-      icon: 'custom-sample',
-      to: '/account'
-    },
-    {
-      title: 'Departments',
-      icon: 'custom-sample',
-      to: '/account1'
-    },
-    {
-      title: 'Form Builder',
-      icon: 'custom-sample',
-      to: '/form-builder/'
-    }
-  )
 
-}
+  // -------------------------------------------------------------
+  // EVALUATION & IMPROVEMENT (Clause 9 & Clause 10)
+  // -------------------------------------------------------------
+  { header: 'Evaluation & Improvement' },
+  {
+    title: 'Internal Audit Program',
+    icon: 'custom-clipboard-outline',
+    to: '/improvement/internal-audits',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+  {
+    title: 'Management Review',
+    icon: 'custom-presentation-outline',
+    to: '/improvement/management-review',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+  {
+    title: 'CAPA Log',
+    icon: 'custom-refresh-outline',
+    to: '/improvement/capa-log',
+    chip: '2026',
+    chipColor: 'primary',
+    chipVariant: 'tonal'
+  },
+
+  // -------------------------------------------------------------
+  // SYSTEM MANAGEMENT
+  // -------------------------------------------------------------
+  { header: 'System Management' },
+  {
+    title: 'Account',
+    icon: 'custom-user-outline',
+    to: '/system/account'
+  },
+  {
+    title: 'Roles',
+    icon: 'custom-key-outline',
+    to: '/system/roles'
+  },
+  {
+    title: 'Departments',
+    icon: 'custom-building-outline',
+    to: '/system/departments'
+  },
+  {
+    title: 'Form Builder',
+    icon: 'custom-wrench-outline',
+    to: '/system/form-builder'
+  }
+];
+
 export default sidebarItem;

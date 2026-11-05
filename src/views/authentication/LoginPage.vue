@@ -1,26 +1,23 @@
 <script setup lang="ts">
 import AuthLogin from './authForms/AuthLogin.vue';
-// assets 
 </script>
 
 <template>
-  <v-row class="bg-containerBg position-relative" no-gutters>
-
-    <!---Login Part-->
-    <v-col cols="12" lg="12" class="d-flex align-center fullscreen-img">
+  <v-row class="bg-containerBg position-relative fill-height" no-gutters>
+    <v-col cols="12" class="d-flex align-center fullscreen-img">
       <v-container>
         <div class="d-flex align-center justify-center" style="min-height: calc(100vh - 148px)">
           <v-row justify="center">
-            <v-col cols="12" md="12">
-              <v-card elevation="0" variant="outlined" rounded="lg" class="loginBox bg-surface">
-                <v-card-text class="pa-sm-10 pa-6">
-
-                  <h2 class="mb-2 text-center"><b>BMA e-QMS</b></h2>
-                  <p class="text-center">ELECTRONIC QUALITY MANAGEMENT SYSTEM</p>
-
-                  <!---Login Form-->
+            <v-col cols="12" sm="10" md="8" lg="5">
+              <v-card elevation="4" rounded="lg" class="loginBox bg-surface pa-2 pa-sm-4">
+                <v-card-text class="pa-sm-8 pa-4">
+                  <div class="text-center mb-6">
+                    <h2 class="text-h4 font-weight-bold text-primary mb-1">BMA e-QMS</h2>
+                    <p class="text-caption text-secondary font-weight-medium">
+                      BALIWAG MARITIME ACADEMY — ISO 9001:2026
+                    </p>
+                  </div>
                   <AuthLogin />
-                  <!---Login Form-->
                 </v-card-text>
               </v-card>
             </v-col>
@@ -28,12 +25,12 @@ import AuthLogin from './authForms/AuthLogin.vue';
         </div>
       </v-container>
     </v-col>
-    <!---Login Part-->
   </v-row>
 </template>
-<style lang="scss">
+
+<style lang="scss" scoped>
 .loginBox {
-  max-width: 475px;
+  max-width: 460px;
   margin: 0 auto;
 }
 
@@ -44,11 +41,9 @@ import AuthLogin from './authForms/AuthLogin.vue';
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  background-image: url('/src/assets/images/building.png');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/src/assets/images/building.png');
   background-size: cover;
-  /* scale image to cover entire area */
   background-position: center;
   background-repeat: no-repeat;
-  /* Optional */
 }
 </style>

@@ -2,71 +2,97 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SvgSprite from '@/components/shared/SvgSprite.vue';
-
-const valid = ref(false);
-const logform = ref();
-const password = ref('');
-const conpassword = ref('');
-const show1 = ref(false);
-const passwordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
-]);
-const confirmpasswordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
-]);
+import alertService from '@/services/alertService';
 
 const router = useRouter();
+const logform = ref<any>(null);
+const password = ref('');
+const confirmPassword = ref('');
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+const loading = ref(false);
 
-function validate() {
-  logform.value.validate();
-  if (logform.value) {
-    router.push('/starter');
+const passwordRules = [
+  (v: string) => !!v || 'Password is required',
+  (v: string) => v.length >= 8 || 'Password must be at least 8 characters'
+];
+
+const confirmPasswordRules = [
+  (v: string) => !!v || 'Password confirmation is required',
+  (v: string) => v === password.value || 'Passwords do not match'
+];
+
+const handleResetPassword = async () => {
+  const { valid } = await logform.value.validate();
+  if (!valid) return;
+
+  loading.value = true;
+  try {
+    // API request placeholder: await authStore.resetPassword(password.value)
+    alertService.toast('Password has been successfully updated.');
+    await router.push('/login');
+  } catch (error) {
+    alertService.error('Failed to reset password.');
+  } finally {
+    loading.value = false;
   }
-}
+};
 </script>
 
 <template>
-  <v-form ref="logform" lazy-validation v-model="valid" action="/starter" @submit.prevent="validate" class="mt-7 loginForm">
-    <div class="mb-6">
-      <v-label>Password</v-label>
+  <v-form ref="logform" @submit.prevent="handleResetPassword" class="mt-4">
+    <div class="mb-4">
+      <v-label class="font-weight-medium mb-1">New Password</v-label>
       <v-text-field
         v-model="password"
         :rules="passwordRules"
-        required
-        placeholder="Enter password"
-        variant="outlined"
+        :type="showPassword ? 'text' : 'password'"
+        placeholder="Enter new password"
         density="comfortable"
+        variant="outlined"
         color="primary"
         hide-details="auto"
-        :type="show1 ? 'text' : 'password'"
-        class="pwdInput mt-2 mb-4"
+        required
       >
         <template v-slot:append-inner>
-          <v-btn color="secondary" aria-label="icon" icon rounded variant="text">
-            <SvgSprite name="custom-eye-invisible" style="width: 20px; height: 20px" v-if="show1 == false" @click="show1 = !show1" />
-            <SvgSprite name="custom-eye" style="width: 20px; height: 20px" v-if="show1 == true" @click="show1 = !show1" />
+          <v-btn icon variant="text" size="small" color="secondary" @click="showPassword = !showPassword">
+            <SvgSprite :name="showPassword ? 'custom-eye' : 'custom-eye-invisible'" style="width: 18px; height: 18px" />
           </v-btn>
         </template>
       </v-text-field>
     </div>
+
     <div class="mb-6">
-      <v-label>Confirm Password</v-label>
+      <v-label class="font-weight-medium mb-1">Confirm New Password</v-label>
       <v-text-field
-        v-model="conpassword"
-        :rules="confirmpasswordRules"
-        placeholder="Enter confirm password"
-        required
-        variant="outlined"
+        v-model="confirmPassword"
+        :rules="confirmPasswordRules"
+        :type="showConfirmPassword ? 'text' : 'password'"
+        placeholder="Confirm new password"
         density="comfortable"
+        variant="outlined"
         color="primary"
         hide-details="auto"
-        class="pwdInput mt-2"
-      ></v-text-field>
+        required
+      >
+        <template v-slot:append-inner>
+          <v-btn icon variant="text" size="small" color="secondary" @click="showConfirmPassword = !showConfirmPassword">
+            <SvgSprite :name="showConfirmPassword ? 'custom-eye' : 'custom-eye-invisible'" style="width: 18px; height: 18px" />
+          </v-btn>
+        </template>
+      </v-text-field>
     </div>
-    <v-btn color="primary" block class="mt-5" variant="flat" rounded="md" size="large" :disabled="valid" type="submit"
-      >Reset Password
+
+    <v-btn
+      type="submit"
+      color="primary"
+      block
+      size="large"
+      variant="flat"
+      rounded="md"
+      :loading="loading"
+    >
+      Reset Password
     </v-btn>
   </v-form>
 </template>

@@ -1,23 +1,22 @@
-// src/types/index.ts
-
+// Existing Core User & Auth Interfaces
 export interface User {
-    id: number;
-    name: string;
-    image: string;
-    email: string;
-    // Add other user properties as needed
+  id: number;
+  name: string;
+  image: string;
+  email: string;
+  role?: string;
+  department?: string;
 }
 
 export interface AuthResponse {
-    access_token: string;
-    token_type: string;
-    expires_in: number; // typically seconds
-    user: User;
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: User;
 }
 
-export interface Item {
-    id: number;
-    name: string;
-    description: string;
-    // Add other item properties as needed
-}
+// ISO 9001:2026 Domain Model Re-exports
+export * from './governance';
+export * from './risk';
+export * from './qms';
+export * from './improvement';

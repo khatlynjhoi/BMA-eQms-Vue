@@ -1,59 +1,56 @@
+<script setup lang="ts">
+defineProps<{
+  modelValue: boolean;
+  versionDetails: {
+    version: string | number;
+    description?: string;
+    uploadedBy?: string;
+    uploadedDate?: string;
+  };
+  versionLink?: string;
+}>();
+
+const emit = defineEmits(['update:modelValue']);
+
+const closeModal = () => {
+  emit('update:modelValue', false);
+};
+</script>
+
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="emitClose" max-width="800">
-    <v-card>
-      <v-card-title class="text-h5 d-flex align-center">
-        VERSION DETAILS
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="emitClose">Close</v-btn>
+  <v-dialog :model-value="modelValue" @update:model-value="closeModal" max-width="850">
+    <v-card rounded="lg">
+      <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
+        <span class="text-h6 font-weight-bold">Version History Detail</span>
+        <v-btn icon variant="text" color="white" size="small" @click="closeModal">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
 
-      <div class="ps-5 pe-5">
-        <small class="text-caption text-lightText">VERSION</small><br>
-        <label for="" class="h3">Version {{ versionDetails.version }}</label>
-        <br>
-        <label for="" class="text-subtitle-1 mb-0">{{ versionDetails.description }}</label><br>
-        <div class="d-flex justify-space-between align-center mb-4">
-          <div class="uploader">
-            <small class="text-caption text-lightText">UPLOADED BY:</small> <br>
-            <label for="" class="text-subtitle-1 mb-0">{{ versionDetails.uploadedBy }}</label>
-          </div>
-          <div class="date">
-            <small class="text-caption text-lightText">UPLOADED DATE:</small> <br>
-            <label for="" class="text-subtitle-1 mb-0">{{ versionDetails.uploadedDate }}</label>
-          </div>
+      <v-card-text class="pa-6">
+        <div class="mb-4">
+          <span class="text-caption font-weight-bold text-secondary">REVISION VERSION</span>
+          <h3 class="text-h5 font-weight-bold text-primary mb-1">Version {{ versionDetails.version }}</h3>
+          <p class="text-body-2 text-high-emphasis mb-3">{{ versionDetails.description || 'No version summary logged.' }}</p>
+
+          <v-row density="compact" class="bg-grey-lighten-4 pa-3 rounded">
+            <v-col cols="6">
+              <span class="text-caption text-secondary">UPLOADED BY</span>
+              <p class="text-subtitle-2 font-weight-bold mb-0">{{ versionDetails.uploadedBy || 'System Administrator' }}</p>
+            </v-col>
+            <v-col cols="6">
+              <span class="text-caption text-secondary">REVISION DATE</span>
+              <p class="text-subtitle-2 font-weight-bold mb-0">{{ versionDetails.uploadedDate || 'N/A' }}</p>
+            </v-col>
+          </v-row>
         </div>
 
-        <iframe v-if="versionLink" :src="`${versionLink}#toolbar=0&navpanes=0`" class=" full-screen-iframe"
-          frameborder="0" @contextmenu.prevent></iframe>
-      </div>
-
+        <iframe
+          v-if="versionLink"
+          :src="`${versionLink}#toolbar=0&navpanes=0`"
+          style="width: 100%; height: 60vh; border: none"
+        />
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
-<style>
-.full-screen-iframe {
-  width: 100%;
-  height: 100vh;
-  border: none;
-  /* Remove iframe border */
-}
-</style>
-<script>
-export default {
-  name: 'ProcedureModalView',
-  props: {
-    modelValue: {
-      type: Boolean,
-      required: true,
-    },
-    versionDetails: Object,
-    versionLink: String
-  },
-  emits: ['update:modelValue'],
-  methods: {
-    emitClose() {
-      this.$emit('update:modelValue', false);
-    },
-  },
-};
-</script>

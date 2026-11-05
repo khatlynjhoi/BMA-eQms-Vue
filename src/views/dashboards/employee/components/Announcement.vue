@@ -1,164 +1,206 @@
-<template>
-    <div class="announcements-section mt-5">
-        <div class="d-flex justify-space-between align-center mb-4">
-            <h2 class="text-primary">Announcements</h2>
-            <v-btn color="primary" @click="showModal = true">Create Announcement</v-btn>
-        </div>
-        <v-alert v-if="showAlert" :type="alertType" class="my-4" border="start" prominent elevation="2" closable
-            @click:close="showAlert = false">
-            Successfully Removed
-        </v-alert>
-        <template v-if="isLoading">
-            <div class="d-flex flex-column justify-center align-center pa-5">
-                <img src="@/assets/images/loading.gif" alt="Loading" />
-                <p class="h3 text-primary font-weight-bold mt-3">LOADING...</p>
-            </div>
-        </template>
-        <div v-else class="announcements-list" v-for="(value, index) in announcementPost" :key="value.id">
-            <AnnouncementPost :post="value" :departments="departments" @edit="updateAnnouncement"
-                @delete="deleteAnnouncement" />
-        </div>
-
-        <!-- Modal -->
-        <v-dialog v-model="showModal" max-width="700px">
-            <v-card>
-                <v-toolbar flat color="success" dark>
-                    <v-toolbar-title>Create Announcement</v-toolbar-title>
-                    <v-spacer />
-                    <v-btn icon @click="showModal = false">x</v-btn>
-                </v-toolbar>
-
-                <div v-if="!formLoader">
-                    <v-card-text>
-                        <v-text-field label="Title" v-model="form.title" />
-                        <v-textarea label="Content" v-model="form.content" />
-
-                        <v-select v-model="form.department" :items="departments" label="Department" item-value="id"
-                            item-title="name" />
-
-                        <v-file-input v-model="form.attachments" label="Attachments" multiple show-size
-                            accept=".pdf,.doc,.docx,.jpg,.png" prepend-icon="mdi-paperclip" />
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-spacer />
-                        <v-btn text @click="showModal = false">Cancel</v-btn>
-                        <v-btn color="primary" @click="submitForm">Submit</v-btn>
-                    </v-card-actions>
-                </div>
-                <div v-else>
-                    <div class="d-flex flex-column justify-center align-center pa-5">
-                        <img src="@/assets/images/formLoader.gif" alt="Loading" />
-                        <p class="h3 text-primary font-weight-bold mt-3">LOADING...</p>
-                    </div>
-                </div>
-            </v-card>
-        </v-dialog>
-    </div>
-</template>
-<script>
-import { defineComponent } from 'vue';
-import AnnouncementPost from '../widgets/AnnouncementPost.vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import AnnouncementPost from '@/views/widgets/AnnouncementPost.vue';
 import { GeneralController } from '@/stores/GeneralController';
+import alertService from '@/services/alertService';
 
-export default defineComponent({
-    name: 'AnnoucementComponent',
-    data() {
-        return {
-            isLoading: true,
-            showModal: false,
-            form: {
-                title: '',
-                content: '',
-                department: null,
-                attachments: []
-            },
-            formLoader: false,
-            departments: [],
-            announcementPost: [],
-            showAlert: false,
-            alertMessage: '',
-            alertType: 'success'
-        }
-    },
-    components: {
-        AnnouncementPost
-    },
-    async mounted() {
-        this.fetchData()
-    },
-    methods: {
-        async fetchData() {
-            const response = await GeneralController.retrieveData('announcement/retrieve-data', { search: '' }, 'data')
-            if (response) {
-                this.announcementPost = response.announcements
-                this.departments = [
-                    {
-                        id: null,
-                        name: 'All Department'
-                    },
-                    ...response.departments
-                ];
-                this.isLoading = false
-            }
-        },
-        async submitForm() {
-            try {
-                this.isLoading = true
-                const formData = new FormData()
-                formData.append('title', this.form.title)
-                formData.append('content', this.form.content)
-                formData.append('department', this.form.department)
+const isLoading = ref(true);
+const showModal = ref(false);
+const formLoader = ref(false);
 
-                if (this.form.attachments && this.form.attachments.length > 0) {
-                    this.form.attachments.forEach((file, index) => {
-                        formData.append(`file[]`, file)
-                    })
-                }
-                // Send to your backend API (adjust the controller/route)
-                await GeneralController.storeItem('announcement/create-announcement', formData)
-                // Refresh data or add manually to the list
-                this.fetchData()
-                this.showModal = false
-                this.resetForm()
-            } catch (error) {
-                console.error('Submission failed:', error)
-            }
-        },
-        resetForm() {
-            this.form = {
-                title: '',
-                content: '',
-                department: null,
-                attachments: []
-            }
-        },
-        async updateAnnouncement(payload) {
-            this.isLoading = true
-            const formData = new FormData();
-            formData.append('announcement', payload.id)
-            formData.append('title', payload.title);
-            formData.append('content', payload.content);
-            formData.append('department', payload.department_id);
-            payload.files.forEach(file => formData.append('file[]', file));
-            const response = await GeneralController.storeItem('announcement/update-announcement', formData)
+const form = ref({
+  title: '',
+  content: '',
+  department: null as number | null,
+  attachments: [] as File[]
+});
 
-            console.log(response)
-            this.fetchData()
-            // Log activity here if needed
-        },
-        async deleteAnnouncement(id) {
-            this.isLoading = true
-            const formData = new FormData()
-            formData.append('announcement', id)
-            const response = await GeneralController.removeItem('announcement/remove-announcement', formData)
-            console.log(response)
-            if (response.ok) {
-                this.showAlert = true
-                this.fetchData()
-            }
-            this.isLoading = false
-            //await axios.delete(`/api/announcements/${id}`);
-        }
+const departments = ref<any[]>([]);
+const announcementPost = ref<any[]>([]);
+
+const fetchData = async () => {
+  isLoading.value = true;
+  try {
+    const controller = new GeneralController();
+    const response: any = await controller.retrieveData('announcement/retrieve-data', { search: '' }, 'data');
+    if (response) {
+      announcementPost.value = response.announcements || [];
+      departments.value = [
+        { id: null, name: 'All Departments' },
+        ...(response.departments || [])
+      ];
     }
-})
+  } catch (error) {
+    console.error('Failed to load announcements:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchData();
+});
+
+const resetForm = () => {
+  form.value = {
+    title: '',
+    content: '',
+    department: null,
+    attachments: []
+  };
+};
+
+const submitForm = async () => {
+  if (!form.value.title || !form.value.content) {
+    alertService.error('Please enter a title and content for the announcement.');
+    return;
+  }
+
+  formLoader.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('title', form.value.title);
+    formData.append('content', form.value.content);
+    if (form.value.department) {
+      formData.append('department', String(form.value.department));
+    }
+
+    if (form.value.attachments.length > 0) {
+      form.value.attachments.forEach((file) => {
+        formData.append('file[]', file);
+      });
+    }
+
+    await GeneralController.storeItem('announcement/create-announcement', formData);
+    alertService.toast('Announcement published successfully.');
+    showModal.value = false;
+    resetForm();
+    await fetchData();
+  } catch (error) {
+    console.error('Submission failed:', error);
+    alertService.error('Failed to create announcement.');
+  } finally {
+    formLoader.value = false;
+  }
+};
+
+const updateAnnouncement = async (payload: any) => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('announcement', payload.id);
+    formData.append('title', payload.title);
+    formData.append('content', payload.content);
+    formData.append('department', payload.department_id || '');
+    if (payload.files && payload.files.length) {
+      payload.files.forEach((file: File) => formData.append('file[]', file));
+    }
+    await GeneralController.storeItem('announcement/update-announcement', formData);
+    alertService.toast('Announcement updated.');
+    await fetchData();
+  } catch (error) {
+    console.error('Failed to update announcement:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const deleteAnnouncement = async (id: number) => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('announcement', String(id));
+    const response = await GeneralController.removeItem('announcement/remove-announcement', formData);
+    if (response.ok) {
+      alertService.toast('Announcement removed.');
+      await fetchData();
+    }
+  } catch (error) {
+    console.error('Failed to delete announcement:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
+
+<template>
+  <div class="announcements-section mt-5">
+    <div class="d-flex justify-space-between align-center mb-4">
+      <div>
+        <h3 class="text-h5 font-weight-bold">Academy Directives & Announcements</h3>
+        <p class="text-caption text-secondary">ISO 9001:2026 Clause 7.4 Institutional Communication Board</p>
+      </div>
+      <v-btn color="primary" @click="showModal = true">
+        <v-icon class="mr-1">mdi-plus</v-icon> Create Announcement
+      </v-btn>
+    </div>
+
+    <template v-if="isLoading">
+      <div class="d-flex justify-center align-center pa-10">
+        <v-progress-circular indeterminate color="primary" size="48" />
+      </div>
+    </template>
+
+    <div v-else-if="announcementPost.length > 0" class="announcements-list">
+      <AnnouncementPost
+        v-for="post in announcementPost"
+        :key="post.id"
+        :post="post"
+        :departments="departments"
+        @edit="updateAnnouncement"
+        @delete="deleteAnnouncement"
+      />
+    </div>
+
+    <v-card v-else border class="pa-8 text-center text-secondary" elevation="0">
+      <v-icon size="48" class="mb-2" color="secondary">mdi-bullhorn-outline</v-icon>
+      <p class="text-body-1 mb-0">No active announcements broadcasted.</p>
+    </v-card>
+
+    <!-- Create Dialog -->
+    <v-dialog v-model="showModal" max-width="650">
+      <v-card rounded="lg">
+        <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
+          <span class="text-h6 font-weight-bold">Create QMS Broadcast</span>
+          <v-btn icon variant="text" color="white" size="small" @click="showModal = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text class="pa-4" v-if="!formLoader">
+          <v-text-field v-model="form.title" label="Directive Title" variant="outlined" density="compact" class="mb-3" />
+          <v-textarea v-model="form.content" label="Announcement Details" variant="outlined" density="compact" rows="4" class="mb-3" />
+          <v-select
+            v-model="form.department"
+            :items="departments"
+            item-title="name"
+            item-value="id"
+            label="Target Department"
+            variant="outlined"
+            density="compact"
+            class="mb-3"
+          />
+          <v-file-input
+            v-model="form.attachments"
+            label="Attach Documents (PDF, Images)"
+            multiple
+            show-size
+            variant="outlined"
+            density="compact"
+            accept=".pdf,.doc,.docx,.jpg,.png"
+          />
+        </v-card-text>
+
+        <div v-else class="d-flex justify-center align-center pa-10">
+          <v-progress-circular indeterminate color="primary" />
+        </div>
+
+        <v-card-actions class="pa-4 pt-0">
+          <v-spacer />
+          <v-btn variant="text" @click="showModal = false">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" @click="submitForm">Publish</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>

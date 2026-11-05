@@ -1,40 +1,65 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-
-const valid = ref(false);
-const logform = ref();
-const email = ref('');
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
+import alertService from '@/services/alertService';
 
 const router = useRouter();
+const logform = ref<any>(null);
+const email = ref('');
+const loading = ref(false);
 
-function validate() {
-  logform.value.validate();
-  if (logform.value) {
-    router.push('/starter');
+const emailRules = [
+  (v: string) => !!v || 'Institutional email is required',
+  (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid'
+];
+
+const handlePasswordReset = async () => {
+  const { valid } = await logform.value.validate();
+  if (!valid) return;
+
+  loading.value = true;
+  try {
+    // API request placeholder: await authStore.requestPasswordReset(email.value)
+    alertService.toast('Password reset instructions sent to your email.');
+    await router.push('/login');
+  } catch (error) {
+    alertService.error('Failed to send reset instructions. Please check your email.');
+  } finally {
+    loading.value = false;
   }
-}
+};
 </script>
 
 <template>
-  <v-form ref="logform" lazy-validation v-model="valid" action="/starter" @submit.prevent="validate" class="mt-7 loginForm">
-    <v-label>Email address</v-label>
-    <v-text-field
-      v-model="email"
-      :rules="emailRules"
-      placeholder="Enter email address"
-      class="mt-2 mb-6"
-      required
-      density="comfortable"
-      hide-details="auto"
-      variant="outlined"
-      color="primary"
-    ></v-text-field>
+  <v-form ref="logform" @submit.prevent="handlePasswordReset" class="mt-4">
+    <div class="mb-4">
+      <v-label class="font-weight-medium mb-1">Institutional Email</v-label>
+      <v-text-field
+        v-model="email"
+        :rules="emailRules"
+        placeholder="user@bma.edu.ph"
+        density="comfortable"
+        variant="outlined"
+        color="primary"
+        hide-details="auto"
+        required
+      />
+    </div>
 
-    <h6 class="text-caption">Do not forgot to check SPAM box.</h6>
-    <v-btn color="primary" block class="mt-2" variant="flat" size="large" rounded="md" :disabled="valid" type="submit"
-      >Send Password Reset Email</v-btn
+    <p class="text-caption text-secondary mb-4">
+      Please check your SPAM folder if you do not receive the link within a few minutes.
+    </p>
+
+    <v-btn
+      type="submit"
+      color="primary"
+      block
+      size="large"
+      variant="flat"
+      rounded="md"
+      :loading="loading"
     >
+      Send Password Reset Email
+    </v-btn>
   </v-form>
 </template>

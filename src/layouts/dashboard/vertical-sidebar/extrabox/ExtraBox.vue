@@ -1,35 +1,39 @@
 <script setup lang="ts">
 import SvgSprite from '@/components/shared/SvgSprite.vue';
-
-// assets
-import avatarGroup from '@/assets/images/welcome-banner.png';
 </script>
 
 <template>
-  <v-sheet rounded="md" color="containerBg" class="pa-4 ExtraBox hide-menu text-center pb-6" border>
+  <v-sheet rounded="md" color="lightprimary" class="pa-4 ExtraBox hide-menu text-center pb-5" border>
     <div class="d-flex align-center flex-column">
-      <v-img :src="avatarGroup" alt="book" class="mb-3" width="169px" cover></v-img>
-      <div class="px-3">
-        <h5 class="text-h5 mb-1 line-height-none">Able Pro</h5>
-        <small class="text-lightText text-h6">Checkout pro features</small>
+      <v-avatar color="primary" variant="tonal" size="48" class="mb-3">
+        <SvgSprite name="custom-shield-outline" style="width: 24px; height: 24px" />
+      </v-avatar>
+      <div class="px-2">
+        <h5 class="text-h6 mb-1 font-weight-bold text-primary">ISO 9001:2026 Standard</h5>
+        <small class="text-caption text-lightText">Baliwag Maritime Academy Quality Management System</small>
       </div>
     </div>
-    <div class="mt-5">
-      <v-btn href="https://1.envato.market/B0JAPW" target="_blank" variant="flat" color="primary" class="primary-shadow rounded-md">
+    <div class="mt-4">
+      <v-btn
+        to="/context/policy-culture"
+        variant="flat"
+        color="primary"
+        size="small"
+        block
+        class="rounded-md"
+      >
         <template v-slot:prepend>
-          <SvgSprite name="custom-logout-1" style="width: 18px; height: 18px" />
+          <SvgSprite name="custom-document-text-outline" style="width: 16px; height: 16px" />
         </template>
-        Upgrade to pro
+        Quality Policy
       </v-btn>
     </div>
   </v-sheet>
 </template>
-<style lang="scss">
+
+<style lang="scss" scoped>
 .ExtraBox {
   position: relative;
   overflow: hidden;
-}
-.line-height-none {
-  line-height: normal;
 }
 </style>

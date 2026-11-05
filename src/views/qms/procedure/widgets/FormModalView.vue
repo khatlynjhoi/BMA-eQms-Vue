@@ -1,150 +1,86 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const props = defineProps<{
+  modelValue: boolean;
+  formDetails: {
+    isModalLoading: boolean;
+    content: any;
+    link?: string | null;
+  };
+  formData?: any;
+}>();
+
+const emit = defineEmits(['update:modelValue', 'update']);
+
+const formModalTab = ref('one');
+const formLoader = ref(false);
+
+const closeModal = () => {
+  emit('update:modelValue', false);
+};
+
+const handleUpdate = () => {
+  const payload = new FormData();
+  if (props.formData) {
+    Object.keys(props.formData).forEach((key) => {
+      payload.append(key, props.formData[key]);
+    });
+  }
+  emit('update', payload);
+};
+</script>
+
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="formModalClose" max-width="800">
-    <v-card>
-      <v-card-title class="text-h5 d-flex align-center">
-        FORM INFORMATION
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="formModalClose">Close</v-btn>
+  <v-dialog :model-value="modelValue" @update:model-value="closeModal" max-width="850">
+    <v-card rounded="lg">
+      <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
+        <span class="text-h6 font-weight-bold">Form Specification & Preview</span>
+        <v-btn icon variant="text" color="white" size="small" @click="closeModal">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
-      <v-tabs v-model="formModalTab" color="success" class="mb-3">
-        <v-tab value="one" class="font-weight-medium">DETAILS</v-tab>
-        <template v-if="formData">
-          <v-tab value="two" class="font-weight-medium">EDIT</v-tab>
-          <v-tab value="three" class="font-weight-medium">REVISION</v-tab>
-        </template>
 
+      <v-tabs v-model="formModalTab" color="primary" class="px-4 border-b">
+        <v-tab value="one">DETAILS & PREVIEW</v-tab>
+        <v-tab v-if="formData" value="two">EDIT METADATA</v-tab>
       </v-tabs>
-      <v-window v-if="!formDetails.isModalLoading" v-model="formModalTab">
+
+      <div v-if="formDetails.isModalLoading" class="d-flex justify-center align-center pa-10">
+        <v-progress-circular indeterminate color="primary" size="48" />
+      </div>
+
+      <v-window v-else v-model="formModalTab" class="pa-4">
+        <!-- Preview Tab -->
         <v-window-item value="one">
-          <div class="ps-5 pe-5">
-            <small class="text-caption text-lightText">{{ formDetails.content.formCode }}</small><br>
-            <label for="" class="h3 text-success">{{ formDetails.content.formName }}</label>
-            <br>
-            <iframe v-if="formDetails.link" :src="`${formDetails.link}#toolbar=0&navpanes=0`"
-              class="full-screen-iframe mt-3" frameborder="0" @contextmenu.prevent></iframe>
+          <div class="mb-3">
+            <span class="text-caption font-weight-bold text-secondary">{{ formDetails.content?.formCode }}</span>
+            <h3 class="text-h5 font-weight-bold text-primary">{{ formDetails.content?.formName }}</h3>
           </div>
+          <iframe
+            v-if="formDetails.link"
+            :src="`${formDetails.link}#toolbar=0&navpanes=0`"
+            style="width: 100%; height: 65vh; border: none"
+          />
         </v-window-item>
-        <v-window-item value="two">
-          <v-container>
-            <v-alert v-if="errorMessages != null" type="error" colored-border elevation="2" dismissible>
-              An error occurred while saving your data. <br>
-              <small color="error">{{ errorMessages }}</small>
-            </v-alert>
-            <label for="ADD" class="text-subtitle-1 text-success text-h3">UPDATE FORMS DETAILS</label>
-            <template v-if="formLoader">
-              <div class="d-flex flex-column justify-center align-center pa-5">
-                <img src="@/assets/images/formLoader.gif" alt="Loading" />
-                <p class="h3 text-primary font-weight-bold mt-3">LOADING...</p>
-              </div>
-            </template>
-            <v-form v-else @submit.prevent="updateForm" class="mt-4">
-              <v-row dense>
-                <!-- Form Code -->
-                <v-col cols="12">
-                  <v-text-field v-model="formData.formCode" label="FORM CODE*" placeholder="e.g. ADM-001"
-                    variant="outlined" density="comfortable" color="success" required hide-details="auto"
-                    class="mb-4"></v-text-field>
-                </v-col>
-                <!-- Form Name -->
-                <v-col cols="12">
-                  <v-text-field v-model="formData.formName" label="FORM NAME*" placeholder="Enter form name"
-                    variant="outlined" density="comfortable" color="success" required hide-details="auto"
-                    class="mb-4"></v-text-field>
-                </v-col>
-                <!-- Form Status -->
-                <v-col cols="12">
-                  <v-select v-model="formData.formStatus" label="FORM STATUS*" :items="[
-                    { title: 'GENERAL FORMS', value: 1 },
-                    { title: 'DEPARTMENTAL FORMS', value: 0 }
-                  ]" :value="formData.formStatus" variant="outlined" density="comfortable" color="success"
-                    :error="!!errors['status']" :error-messages="errors['status']" hide-details="auto" required
-                    class="mb-4"></v-select>
-                </v-col>
 
-                <!-- Retention Period -->
-                <v-col cols="12">
-                  <v-select v-model="formData.formRetention" label="Retention Period*" :items="[
-                    { title: 'Permanent', value: 'Permanent' },
-                    { title: '1 Year', value: '1 Year' },
-                    { title: '2 Years', value: '2 Years' },
-                    { title: '3 Years', value: '3 Years' },
-                    { title: '4 Years', value: '4 Years' },
-                    { title: '5 Years', value: '5 Years' },
-                    { title: 'Until Superseded', value: 'Until Superseded' }
-                  ]" variant="outlined" density="comfortable" color="success" hide-details="auto" required
-                    class="mb-4"></v-select>
-                </v-col>
-
-                <!-- Action Buttons -->
-                <v-col cols="12" class="pt-4 d-flex justify-end">
-                  <v-btn variant="text" color="grey-darken-1" class="mr-2">Cancel</v-btn>
-                  <v-btn color="success" type="submit" elevation="1" size="large">
-                    Submit Form
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-container>
-
-        </v-window-item>
-        <v-window-item value="three">
-
+        <!-- Edit Tab -->
+        <v-window-item value="two" v-if="formData">
+          <v-form @submit.prevent="handleUpdate">
+            <v-text-field v-model="formData.formCode" label="Form Code" variant="outlined" density="compact" class="mb-3" />
+            <v-text-field v-model="formData.formName" label="Form Name" variant="outlined" density="compact" class="mb-3" />
+            <v-select
+              v-model="formData.formRetention"
+              label="Retention Period"
+              :items="['Permanent', '1 Year', '2 Years', '3 Years', '5 Years', 'Until Superseded']"
+              variant="outlined"
+              density="compact"
+              class="mb-4"
+            />
+            <v-btn type="submit" color="primary" variant="flat">Save Changes</v-btn>
+          </v-form>
         </v-window-item>
       </v-window>
-      <template v-else>
-        <div class="d-flex flex-column justify-center align-center pa-5">
-          <img src="@/assets/images/loading.gif" alt="Loading" />
-          <p class="h3 text-success font-weight-bold mt-3">LOADING...</p>
-        </div>
-      </template>
     </v-card>
   </v-dialog>
 </template>
-<style>
-.full-screen-iframe {
-  width: 100%;
-  height: 100vh;
-  border: none;
-}
-</style>
-
-<script>
-export default {
-  name: 'FormModalView',
-  data() {
-    return {
-      formModalTab: null,
-      errorMessages: null,
-      formLoader: false,
-      errors: []
-    }
-  },
-  props: {
-    modelValue: {
-      type: Boolean,
-      required: true,
-    },
-    formDetails: Object,
-    formData: Object
-  },
-  emits: ['update:modelValue', 'update'],
-  methods: {
-    formModalClose() {
-      this.$emit('update:modelValue', false);
-      this.formDetails.isModalLoading = true
-      this.formLoader = false
-    },
-    updateForm() {
-      const formData = new FormData();
-      this.formLoader = true;
-      this.errorMessages = null;
-      for (let key in this.formData) {
-        formData.append(key, this.formData[key]);
-      }
-      console.log(this.formData)
-      this.$emit('update', formData);
-      // this.$emit('update:modelValue', false);
-    }
-  },
-};
-</script>

@@ -1,28 +1,20 @@
-<template>
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import DepartmentHeadView from './DepartmentHeadView.vue';
+import QMRView from './QMRView.vue';
+import SchoolDirector from './SchoolDirector.vue';
 
-    <DepartmentHeadView v-if="user === 1" />
-    <QMRView v-else-if="user === 2" />
-    <SchoolDirector v-else />
+const authStore = useAuthStore();
 
-</template>
-<script>
-import { defineComponent } from 'vue';
-import DepartmentHeadView from './workflow/DepartmentHeadView.vue';
-import QMRView from './workflow/QMRView.vue';
-import SchoolDirector from './workflow/SchoolDirector.vue';
-
-export default defineComponent({
-    name: 'ApprovalWorkflow',
-    data() {
-        return {
-            user: 1
-        }
-    },
-    components: {
-        DepartmentHeadView,
-        QMRView,
-        SchoolDirector,
-
-    }
-})
+// Role mapping: 1/Standard = Initiator, 6 = QMR, 9 = School Director Executive
+const userRole = computed(() => Number(authStore.user?.roleID || 1));
 </script>
+
+<template>
+  <div>
+    <DepartmentHeadView v-if="userRole === 1 || userRole === 6" />
+    <SchoolDirector v-else-if="userRole === 9" />
+    <QMRView v-else :amendment-list="[]" />
+  </div>
+</template>

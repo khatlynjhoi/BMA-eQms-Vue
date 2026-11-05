@@ -1,340 +1,247 @@
-<template>
-    <v-card variant="outlined" elevation="0" class="bg-surface mb-5" rounded="lg">
-        <v-card-item>
-            <div class="d-flex justify-space-between align-center">
-                <v-card-title class="text-h4">Quality Objective</v-card-title>
-
-                <v-btn color="primary" @click="academicModal.show = true">New Quality Objective</v-btn>
-            </div>
-        </v-card-item>
-        <v-divider></v-divider>
-        <v-card-text class="pa-0">
-            <template v-if="contentLoading">
-                <div class="d-flex justify-center align-center pa-5">
-                    <img src="@/assets/images/loading.gif" alt="Loading" />
-                </div>
-            </template>
-            <template v-else>
-
-                <template v-if="userRole == 2">
-                    <QualityObjectiveList :data="qualityObjectiveList" :headers="departmentHeader" @view="onView"
-                        @removed="onRemoved" @submit="onSubmit" :role="userRole" />
-                    <!--  <RiskTableList :data="riskAssessmentsList" :headers="headers(2)" @view="onView" @removed="onDelete"
-                        @edit="onEdit" @submit="onSubmit" :role="userRole" /> -->
-                </template>
-                <template v-else>
-                    <v-window v-model="tab">
-                        <v-tabs v-model="tab" color="success" class="px-6">
-                            <v-tab value="one" class="font-weight-medium">My Quality Objective</v-tab>
-                            <v-tab v-if="userRole != 6" value="two" class="font-weight-medium">SUBMISSIONS</v-tab>
-                            <v-tab v-if="userRole != 5" value="three" class="font-weight-medium">DATA BANK</v-tab>
-                        </v-tabs>
-                        <v-window-item value="one">
-                            <QualityObjectiveList :data="qualityObjectiveList" :headers="departmentHeader"
-                                @viewPDF="onViewPDF" @view="onView" @removed="onRemoved" @submit="onSubmit"
-                                :role="userRole" />
-                            <!--  <RiskTableList :data="ownerRiskAssessments" :headers="headers(2)" @view="onView"
-                                @removed="onDelete" @edit="onEdit" :role="2" @submit="onSubmit" /> -->
-                        </v-window-item>
-                        <v-window-item value="two">
-                            <QualityObjectiveList :data="submissionObjectiveList" :headers="submissionHeader"
-                                @viewPDF="onViewPDF" @view="onView" @removed="onRemoved" @submit="onSubmit" :role="5"
-                                @validate="onValidate" />
-                        </v-window-item>
-                        <v-window-item value="three">
-                            <QualityObjectiveList :data="dataBankObjectiveList" :headers="submissionHeader" :role="1"
-                                @viewPDF="onViewPDF" @view="onView" />
-                        </v-window-item>
-                    </v-window>
-                </template>
-
-
-            </template>
-        </v-card-text>
-    </v-card>
-    <QualityObjectiveModal v-if="objectiveModal.show" v-model="objectiveModal.show" :form-details="objectiveModal" />
-    <v-dialog v-model="academicModal.show" persistent max-width="400">
-        <v-card>
-
-            <form @submit.prevent="storeAcademicYear">
-                <v-card-title class="text-h5 d-flex align-center">
-                    Create Quality Objective
-                    <v-spacer></v-spacer>
-                    <v-btn color="primary" @click="academicModal.show = false" size="small">Close</v-btn>
-                </v-card-title>
-
-                <v-card-text class="mb-0 pb-0">
-                    <div class="form-group mb-0 pb-0">
-                        <small class="mb-1">
-                            Academic Year (e.g., 2025-2026)
-                            <span class="text-danger">*</span>
-                        </small>
-
-                        <v-text-field v-model="academicModal.formInput" required variant="outlined" color="success"
-                            class="mb-0 pb-0" />
-                    </div>
-
-                    <div class="form-group mb-0 pb-0">
-                        <small>Select Procedure</small>
-
-                        <v-select v-model="academicModal.procedure" :items="titleOption" item-title="name"
-                            item-value="id" required variant="outlined" color="success" />
-                    </div>
-                </v-card-text>
-
-                <v-card-actions class="float-end">
-                    <v-btn variant="text" @click="academicModal.show = false">Cancel</v-btn>
-                    <v-btn color="primary" type="submit">Create</v-btn>
-                </v-card-actions>
-            </form>
-
-        </v-card>
-    </v-dialog>
-    <v-overlay :model-value="pageLoader" class="align-center justify-center" persistent>
-        <v-progress-circular indeterminate size="64" color="primary" />
-    </v-overlay>
-    <AlertMessage v-if="alertMessage.show" :alertMessage="alertMessage" />
-    <ConfirmationDialog v-if="confirmData.show" :confirmData="confirmData" @confirm="confirmAction" />
-
-</template>
-<script>
-import { GeneralController } from '@/stores/GeneralController';
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import QualityObjectiveList from './components/QualityObjectiveList.vue';
-import AlertMessage from '../components/AlertMessage.vue';
-import ConfirmationDialog from '../components/ConfirmationDialog.vue';
 import QualityObjectiveModal from './components/QualityObjectiveModal.vue';
+import { GeneralController } from '@/stores/GeneralController';
 import { useAuthStore } from '@/stores/auth';
-import { QualityObjectiveService } from '@/services/qualityObjectiveService';
-export default {
-    name: 'QualityObjective',
-    data() {
-        return {
-            contentLoading: true,
-            academicModal: {
+import alertService from '@/services/alertService';
 
-                show: false,
-                formInput: '',
-                procedure: null
-            },
-            titleOption: null,
-            pageLoader: false,
-            alertMessage: {
-                show: false,
-                type: 'info', // success | error | warning | info
-                text: 'Your action was completed successfully.',
-                buttonText: 'OK',
-            },
-            tab: null,
-            qualityObjectiveList: [],
-            submissionObjectiveList: [],
-            dataBankObjectiveList: [],
-            confirmData: {
-                show: false,
-                type: 'warning',
-                title: 'Delete Item?',
-                message: 'Are you sure you want to delete this item?'
-            },
-            apiLink: [
-                { role: 1, link: 'quality-objective/retrieve-data-list', dataKey: 'qualityObjectiveList', name: 'Administrator' },
-                { role: 2, link: 'quality-objective/retrieve-list', dataKey: 'qualityObjectiveList', name: 'Owner' },
-                { role: 5, link: 'quality-objective/retrieve-submitted', dataKey: 'qualityObjectiveList', name: 'School Director' }
-            ],
-            objectiveModal: {
-                show: false,
-                link: null,
-                data: null,
-                isModalLoading: true
-            },
-            authStore: new useAuthStore(),
-            qualityObjectiveService: new QualityObjectiveService()
-        }
+const authStore = useAuthStore();
 
-    },
-    components: {
-        QualityObjectiveList, AlertMessage, ConfirmationDialog, QualityObjectiveModal
-    },
-    computed: {
-        departmentHeader() {
-            return [
-                { title: 'Academic Year', key: 'academic', align: 'start' },
-                { title: 'Procedure', key: 'procedure', align: 'start' },
-                { title: 'Objectives', key: 'objectives', align: 'start' },
-                { title: 'Completion', key: 'completionProgress', align: 'start' },
-            ];
-        },
-        submissionHeader() {
-            return [
-                { title: 'Academic Year', key: 'academic', align: 'start' },
-                { title: 'Procedure', key: 'procedure', align: 'start' },
-                { title: 'Objectives', key: 'objectives', align: 'start' },
-                { title: 'Completion', key: 'completionProgress', align: 'start' },
-                { title: 'Department', key: 'department', align: 'start' },
-                { title: 'Owner Name', key: 'created_by', align: 'start' },
-                { title: 'Status', key: 'status', align: 'start' },
-            ];
-        },
-        userRole() {
-            let storedProfile;
-            try {
-                const userData = localStorage.getItem('user');
-                storedProfile = userData ? JSON.parse(userData) : null;
-            } catch (error) {
-                this.alertMessage = {
-                    show: true,
-                    status: 'error',
-                    text: 'Failed to parse user data from localStorage:', error
-                }
-                storedProfile = null;
-            }
-            return storedProfile?.roleID || 6;
-        },
-    },
-    async mounted() {
-        this.titleOption = await GeneralController.retrieveData('amendment/categories', { search: 'Procedure' }, 'data');
-        await this.retrieveData()
-    },
-    methods: {
-        async retrieveData() {
-            // Get the appropriate API link based on user role
-            this.contentLoading = true
-            try {
-                const formData = new FormData();
-                formData.append('search', null);
-                const response = await this.qualityObjectiveService.retrieveData('quality-objective/retrieve-data-list', formData)
-                if (response) {
-                    this.dataBankObjectiveList = response['approvedList']
-                    this.qualityObjectiveList = response['ownerList']
-                    this.submissionObjectiveList = response['submittedList']
+const contentLoading = ref(true);
+const pageLoader = ref(false);
+const tab = ref('one');
 
-                }
-            } catch (error) {
-                this.alertMessage = {
-                    show: true,
-                    status: 'error',
-                    text: `An error occurred while  retrieve data.` + error
-                }
-                // this.authStore.logout()
-            } finally {
-                this.contentLoading = false;
-            }
-        },
-        async storeAcademicYear() {
-            this.pageLoader = true
-            try {
-                this.contentLoading = true
-                const formData = new FormData()
-                formData.append('academic', this.academicModal.formInput)
-                formData.append('procedure', this.academicModal.procedure)
-                const response = await GeneralController.storeItem('quality-objective/store', formData)
-                const data = await response.json();
-                console.log(data)
-                if (response.status == 200) {
-                    this.alertMessage = {
-                        show: true,
-                        type: 'success',
-                        text: data.message
-                    }
-                } else {
-                    this.alertMessage = {
-                        show: true,
-                        type: 'error',
-                        text: data.message
-                    }
-                }
-                this.retrieveData()
-            } catch (err) {
-                this.alertMessage = {
-                    show: true,
-                    type: 'error',
-                    text: 'Failed to parse user data from localStorage:', error
-                }
-            } finally {
-                this.academicModal = {
-                    show: false,
-                    procedure: null,
-                    formInput: ''
-                }
-                this.contentLoading = false
-                this.pageLoader = false;
-            }
-        },
-        confirmationAlert(data) {
-            this.confirmData = {
-                show: true,
-                type: 'warning',
-                title: 'Delete Item?',
-                message: 'Are you sure you want to delete this Quality Objective?',
-                data: data
-            }
-        },
-        onView(data) {
-            window.location.href = `/quality-objectives/monitoring/view/${data.id}`;
-        },
-        async onViewPDF(item) {
-            const value = item.id
-            console.log(item)
-            this.formLoader = true
-            this.objectiveModal.show = true
-            this.objectiveModal.data = item
-            const response = await GeneralController.retrieveFile({ objective: value }, 'quality-objective/pdf-qualityObjective');
-            const blob = new Blob([response], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            this.objectiveModal.link = url
-            if (this.objectiveModal.link) {
-                this.objectiveModal.isModalLoading = false
-            }
+const academicModal = ref({
+  show: false,
+  formInput: '',
+  procedure: null as any
+});
 
-        },
-        onSubmit() {
+const titleOption = ref<any[]>([]);
+const qualityObjectiveList = ref<any[]>([]);
+const submissionObjectiveList = ref<any[]>([]);
+const dataBankObjectiveList = ref<any[]>([]);
 
-        },
-        onRemoved(data) {
-            const formData = new FormData()
-            formData.append('objective', data.id)
-            this.confirmData = {
-                show: true,
-                type: 'warning',
-                title: 'Delete Item?',
-                message: 'Are you sure you want to delete this Quality Objective?',
-                data: { formData, link: 'removed' }
-            }
-        },
-        async confirmAction(action) {
-            this.pageLoader = true;
-            this.contentLoading = true;
+const objectiveModal = ref({
+  show: false,
+  link: null as string | null,
+  data: null as any,
+  isModalLoading: true
+});
 
-            const link = `quality-objective/${action.link}`;
+const userRole = computed(() => Number(authStore.user?.roleID || 6));
 
-            const setAlert = (type, text) => {
-                this.alertMessage = {
-                    show: true,
-                    type,
-                    text,
-                    buttonText: 'OK',
-                };
-            };
+const departmentHeader = [
+  { title: 'Academic Year', key: 'academic', align: 'start' as const },
+  { title: 'Procedure', key: 'procedure', align: 'start' as const },
+  { title: 'Objectives', key: 'objectives', align: 'start' as const },
+  { title: 'Completion', key: 'completionProgress', align: 'start' as const }
+];
 
-            try {
-                const response = await GeneralController.removeItem(link, action.formData);
+const submissionHeader = [
+  { title: 'Academic Year', key: 'academic', align: 'start' as const },
+  { title: 'Procedure', key: 'procedure', align: 'start' as const },
+  { title: 'Objectives', key: 'objectives', align: 'start' as const },
+  { title: 'Completion', key: 'completionProgress', align: 'start' as const },
+  { title: 'Department', key: 'department', align: 'start' as const },
+  { title: 'Owner Name', key: 'created_by', align: 'start' as const },
+  { title: 'Status', key: 'status', align: 'start' as const }
+];
 
-                if (response.status === 200) {
-                    this.retrieveData();
-                    setAlert('info', 'Your action was completed successfully.');
-                } else {
-                    const message = response?.data?.message || '';
-                    setAlert('error', `Failed to transact the Quality Objective.\n${message}`);
-                }
-            } catch (error) {
-                setAlert(
-                    'error',
-                    'An error occurred while transacting Quality Objectives.'
-                );
-            } finally {
-                this.pageLoader = false;
-                this.contentLoading = false;
-            }
-        }
-
+const retrieveData = async () => {
+  contentLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('search', '');
+    const controller = new GeneralController();
+    const response: any = await controller.retrieveData('quality-objective/retrieve-data-list', formData, 'data');
+    if (response) {
+      dataBankObjectiveList.value = response.approvedList || [];
+      qualityObjectiveList.value = response.ownerList || [];
+      submissionObjectiveList.value = response.submittedList || [];
     }
-}
+  } catch (error) {
+    console.error('Error fetching quality objectives:', error);
+    alertService.error('Failed to retrieve Quality Objectives.');
+  } finally {
+    contentLoading.value = false;
+  }
+};
+
+onMounted(async () => {
+  try {
+    const controller = new GeneralController();
+    titleOption.value = await controller.retrieveData('amendment/categories', { search: 'Procedure' }, 'data');
+  } catch (e) {
+    console.error('Failed categories load', e);
+  }
+  await retrieveData();
+});
+
+const storeAcademicYear = async () => {
+  pageLoader.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('academic', academicModal.value.formInput);
+    formData.append('procedure', String(academicModal.value.procedure));
+
+    const controller = new GeneralController();
+    const response: any = await GeneralController.storeItem('quality-objective/store', formData);
+    
+    alertService.toast('Quality Objective record created successfully.');
+    academicModal.value = { show: false, formInput: '', procedure: null };
+    await retrieveData();
+  } catch (err: any) {
+    alertService.error('Failed to store Quality Objective.');
+  } finally {
+    pageLoader.value = false;
+  }
+};
+
+const onView = (data: any) => {
+  window.location.href = `/quality-objectives/monitoring/view/${data.id}`;
+};
+
+const onViewPDF = async (item: any) => {
+  objectiveModal.value.show = true;
+  objectiveModal.value.data = item;
+  objectiveModal.value.isModalLoading = true;
+
+  try {
+    const controller = new GeneralController();
+    const response = await controller.retrieveFile(String(item.id), 'quality-objective/pdf-qualityObjective');
+    const blob = response instanceof Blob
+      ? response
+      : new Blob([new Uint8Array(response)], { type: 'application/pdf' });
+    objectiveModal.value.link = URL.createObjectURL(blob);
+  } catch (error) {
+    alertService.error('Failed to load PDF report preview.');
+  } finally {
+    objectiveModal.value.isModalLoading = false;
+  }
+};
+
+const onSubmit = async (item: any) => {
+  const confirmed = await alertService.confirm('Do you want to submit this Quality Objective for approval?');
+  if (confirmed.isConfirmed) {
+    alertService.toast('Quality Objective submitted.');
+  }
+};
+
+const onRemoved = async (data: any) => {
+  const confirmed = await alertService.confirm('Are you sure you want to delete this Quality Objective?');
+  if (confirmed.isConfirmed) {
+    try {
+      const formData = new FormData();
+      formData.append('objective', String(data.id));
+      await GeneralController.removeItem('quality-objective/removed', formData);
+      alertService.toast('Quality Objective removed.');
+      await retrieveData();
+    } catch (error) {
+      alertService.error('Delete action failed.');
+    }
+  }
+};
 </script>
+
+<template>
+  <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
+    <v-card-item>
+      <div class="d-flex justify-space-between align-center">
+        <v-card-title class="text-h5 font-weight-bold">QUALITY OBJECTIVES MANAGEMENT (ISO 9001:2026 CLAUSE 6.2)</v-card-title>
+        <v-btn color="primary" variant="flat" @click="academicModal.show = true">
+          <v-icon class="mr-1">mdi-plus</v-icon> New Quality Objective
+        </v-btn>
+      </div>
+    </v-card-item>
+    <v-divider />
+
+    <v-card-text class="pa-0">
+      <div v-if="contentLoading" class="d-flex justify-center align-center pa-10">
+        <v-progress-circular indeterminate color="primary" size="48" />
+      </div>
+
+      <template v-else>
+        <v-tabs v-model="tab" color="primary" class="px-4 border-b">
+          <v-tab value="one">MY QUALITY OBJECTIVES</v-tab>
+          <v-tab v-if="userRole !== 6" value="two">SUBMISSIONS</v-tab>
+          <v-tab v-if="userRole !== 5" value="three">INSTITUTIONAL DATA BANK</v-tab>
+        </v-tabs>
+
+        <v-window v-model="tab" class="pa-4">
+          <v-window-item value="one">
+            <QualityObjectiveList
+              :data="qualityObjectiveList"
+              :headers="departmentHeader"
+              :role="userRole"
+              @view="onView"
+              @viewPDF="onViewPDF"
+              @removed="onRemoved"
+              @submit="onSubmit"
+            />
+          </v-window-item>
+          <v-window-item value="two" v-if="userRole !== 6">
+            <QualityObjectiveList
+              :data="submissionObjectiveList"
+              :headers="submissionHeader"
+              :role="5"
+              @view="onView"
+              @viewPDF="onViewPDF"
+              @removed="onRemoved"
+              @submit="onSubmit"
+            />
+          </v-window-item>
+          <v-window-item value="three" v-if="userRole !== 5">
+            <QualityObjectiveList
+              :data="dataBankObjectiveList"
+              :headers="submissionHeader"
+              :role="1"
+              @view="onView"
+              @viewPDF="onViewPDF"
+            />
+          </v-window-item>
+        </v-window>
+      </template>
+    </v-card-text>
+  </v-card>
+
+  <!-- PDF Preview Modal -->
+  <QualityObjectiveModal
+    v-if="objectiveModal.show"
+    v-model="objectiveModal.show"
+    :form-details="objectiveModal"
+  />
+
+  <!-- Create Dialog -->
+  <v-dialog v-model="academicModal.show" max-width="450">
+    <v-card rounded="lg" class="pa-4">
+      <v-card-title class="px-0 pt-0 text-h6 font-weight-bold">Create Quality Objective</v-card-title>
+      <v-form @submit.prevent="storeAcademicYear">
+        <v-text-field
+          v-model="academicModal.formInput"
+          label="Academic Year (e.g. 2025-2026)*"
+          variant="outlined"
+          density="compact"
+          required
+          class="mb-3"
+        />
+        <v-select
+          v-model="academicModal.procedure"
+          :items="titleOption"
+          item-title="name"
+          item-value="id"
+          label="Target QMS Procedure*"
+          variant="outlined"
+          density="compact"
+          required
+          class="mb-4"
+        />
+        <div class="d-flex justify-end ga-2">
+          <v-btn variant="text" @click="academicModal.show = false">Cancel</v-btn>
+          <v-btn type="submit" color="primary" variant="flat">Create</v-btn>
+        </div>
+      </v-form>
+    </v-card>
+  </v-dialog>
+</template>
