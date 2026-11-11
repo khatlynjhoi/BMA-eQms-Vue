@@ -2,10 +2,29 @@
 import { ref, onMounted } from 'vue';
 import SvgSprite from '@/components/shared/SvgSprite.vue';
 
-const props = defineProps({ 
-  item: { type: Object, required: true }, 
-  level: { type: Number, default: 0 } 
-});
+export interface MenuItem {
+  title: string;
+  icon?: string;
+  to?: string;
+  type?: string;
+  getURL?: boolean;
+  disabled?: boolean;
+  subCaption?: string;
+  chip?: string;
+  chipColor?: string;
+  chipVariant?: 'flat' | 'text' | 'outlined' | 'tonal';
+  chipIcon?: string;
+}
+
+const props = withDefaults(
+  defineProps<{
+    item: MenuItem;
+    level?: number;
+  }>(),
+  {
+    level: 0
+  }
+);
 
 const relativeURL = ref('');
 
@@ -19,31 +38,33 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Single Item with Base URL prepend -->
+  <!-- Single Item with Base URL Prepend -->
   <v-list-item
     v-if="props.item.getURL === true"
-    :to="item.type === 'external' ? '' : item.to"
+    :to="item.type === 'external' ? undefined : item.to"
     :href="`${relativeURL}${item.to}`"
-    rounded
+    rounded="lg"
     color="primary"
     :disabled="item.disabled"
-    :target="item.type === 'external' ? '_blank' : ''"
+    :target="item.type === 'external' ? '_blank' : undefined"
+    class="mb-1"
   >
-    <template v-slot:prepend>
+    <template #prepend>
       <SvgSprite :name="props.item.icon || ''" :level="props.level" />
     </template>
-    <v-list-item-title>{{ item.title }}</v-list-item-title>
-    
+
+    <v-list-item-title class="text-body-2 font-weight-medium">{{ item.title }}</v-list-item-title>
+
     <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-0 hide-menu">
       {{ item.subCaption }}
     </v-list-item-subtitle>
-    
-    <template v-slot:append v-if="item.chip">
-      <v-chip 
-        :color="item.chipColor" 
-        class="sidebarchip hide-menu" 
-        size="x-small" 
-        :variant="item.chipVariant" 
+
+    <template #append v-if="item.chip">
+      <v-chip
+        :color="item.chipColor || 'primary'"
+        class="sidebarchip hide-menu font-weight-bold"
+        size="x-small"
+        :variant="item.chipVariant || 'tonal'"
         :prepend-icon="item.chipIcon"
       >
         {{ item.chip }}
@@ -54,28 +75,30 @@ onMounted(() => {
   <!-- Standard Single Item -->
   <v-list-item
     v-else
-    :to="item.type === 'external' ? '' : item.to"
-    :href="item.type === 'external' ? item.to : ''"
-    rounded
+    :to="item.type === 'external' ? undefined : item.to"
+    :href="item.type === 'external' ? item.to : undefined"
+    rounded="lg"
     color="primary"
     :disabled="item.disabled"
-    :target="item.type === 'external' ? '_blank' : ''"
+    :target="item.type === 'external' ? '_blank' : undefined"
+    class="mb-1"
   >
-    <template v-slot:prepend>
+    <template #prepend>
       <SvgSprite :name="props.item.icon || ''" :level="props.level" />
     </template>
-    <v-list-item-title>{{ item.title }}</v-list-item-title>
-    
+
+    <v-list-item-title class="text-body-2 font-weight-medium">{{ item.title }}</v-list-item-title>
+
     <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-0 hide-menu">
       {{ item.subCaption }}
     </v-list-item-subtitle>
-    
-    <template v-slot:append v-if="item.chip">
-      <v-chip 
-        :color="item.chipColor" 
-        class="sidebarchip hide-menu" 
-        size="x-small" 
-        :variant="item.chipVariant" 
+
+    <template #append v-if="item.chip">
+      <v-chip
+        :color="item.chipColor || 'primary'"
+        class="sidebarchip hide-menu font-weight-bold"
+        size="x-small"
+        :variant="item.chipVariant || 'tonal'"
         :prepend-icon="item.chipIcon"
       >
         {{ item.chip }}

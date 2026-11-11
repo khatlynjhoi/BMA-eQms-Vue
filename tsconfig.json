@@ -12,13 +12,11 @@
     "skipLibCheck": true,
     "noEmit": true,
     "allowJs": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-"include": [
+  "include": [
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue",

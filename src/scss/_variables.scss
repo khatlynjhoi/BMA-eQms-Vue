@@ -3,18 +3,18 @@
 @use 'sass:meta';
 @use 'vuetify/lib/styles/tools/functions' as *;
 
-// This will false all colors which is not necessory for theme
+// Disable unused color packs to reduce CSS bundle size
 $color-pack: false;
 
 // Global font size and border radius
 $font-size-root: 1rem;
 $border-radius-root: 8px;
-$body-font-family: Inter var !default;
+$body-font-family: 'Inter var', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !default;
 $heading-font-family: $body-font-family !default;
 $btn-font-weight: 400 !default;
 $btn-letter-spacing: 0 !default;
 
-// Global Radius as per breakeven point
+// Border radius breakpoints
 $rounded: () !default;
 $rounded: map-deep-merge(
   (
@@ -30,7 +30,8 @@ $rounded: map-deep-merge(
   ),
   $rounded
 );
-// Global Typography
+
+// Global Typography Scale
 $typography: () !default;
 $typography: map-deep-merge(
   (
@@ -119,16 +120,13 @@ $typography: map-deep-merge(
   $typography
 );
 
-// Custom Variables
-// colors
-$white: #fff !default;
-
-// cards
+// Custom UI Variables
+$white: #ffffff !default;
 $card-item-spacer-xy: 24px !default;
 $card-text-spacer: 24px !default;
 $card-title-size: 16px !default;
 
-// Global Shadow
+// Global Elevation Shadow
 $box-shadow: 0px 8px 24px rgba(19, 25, 32, 0.08);
 
 $theme-colors: (

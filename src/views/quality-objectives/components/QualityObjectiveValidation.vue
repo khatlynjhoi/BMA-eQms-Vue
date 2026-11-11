@@ -11,9 +11,12 @@ const props = defineProps<{
   };
 }>();
 
-const emit = defineEmits(['update:modelValue', 'approved', 'disapproved']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'approved', validation: any): void;
+  (e: 'disapproved', payload: FormData): void;
+}>();
 
-const formModalTab = ref('one');
 const isDisapproved = ref(false);
 const remarks = ref('');
 
@@ -43,8 +46,8 @@ const getStatusBadge = (statusVal: number) => {
   <v-dialog :model-value="modelValue" @update:model-value="formModalClose" max-width="1200" persistent>
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
-        <span class="text-h6 font-weight-bold">Quality Objectives Validation & Verification</span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <span class="text-h6 font-weight-bold">Quality Objectives Validation & Verification (Clause 6.2)</span>
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Validation" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>

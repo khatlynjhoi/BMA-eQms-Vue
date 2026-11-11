@@ -9,7 +9,6 @@ const props = defineProps<{
   when_action?: any[];
   risk_decision?: any[];
   opportunity_rating?: any[];
-  alertMessage?: any;
 }>();
 
 const emit = defineEmits<{
@@ -38,7 +37,7 @@ const submitForm = () => {
         <span class="text-h6 font-weight-bold">
           {{ formData.action === 'update' ? 'UPDATE' : 'ADD' }} HAZARD & RISK DESCRIPTION (CLAUSE 6.1)
         </span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Dialog" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>

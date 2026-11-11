@@ -18,9 +18,9 @@ const statusOptions = ['Approved', 'Pending', 'Rejected'];
 
 const defaultHeaders = [
   { title: 'Status', key: 'status', align: 'start' as const },
-  { title: 'Amendment Control', key: 'amendmentControl', align: 'start' as const },
+  { title: 'Amendment Control No.', key: 'amendmentControl', align: 'start' as const },
   { title: 'Procedure / Form Name', key: 'name', align: 'start' as const },
-  { title: 'Category', key: 'reference', align: 'start' as const },
+  { title: 'Classification', key: 'reference', align: 'start' as const },
   { title: 'Submission Date', key: 'submittedData', align: 'start' as const },
   { title: 'Actions', key: 'draftAction', align: 'center' as const, sortable: false }
 ];
@@ -46,7 +46,7 @@ const getStatusColor = (status: string) => {
 
 const exportCSV = () => {
   const csvContent = [
-    ['ID', 'Amendment Control', 'Model', 'Description of Changes', 'Updated At', 'Status'],
+    ['ID', 'Amendment Control', 'Classification', 'Description of Changes', 'Updated At', 'Status'],
     ...filteredData.value.map((row) => [
       row.id,
       row.amendmentControl || row.amendment_control,
@@ -62,7 +62,7 @@ const exportCSV = () => {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', 'qms_amendments.csv');
+  link.setAttribute('download', `bma_qms_amendments_${Date.now()}.csv`);
   link.click();
   URL.revokeObjectURL(link.href);
 };
@@ -71,9 +71,11 @@ const exportCSV = () => {
 <template>
   <v-container fluid class="pa-0">
     <v-toolbar flat color="transparent" class="mb-4">
-      <v-toolbar-title class="text-h6 font-weight-bold px-0">List of Amendments</v-toolbar-title>
+      <v-toolbar-title class="text-h6 font-weight-bold px-0">
+        REGISTERED AMENDMENT REQUESTS
+      </v-toolbar-title>
       <v-spacer />
-      
+
       <v-select
         v-model="statusFilter"
         :items="statusOptions"
@@ -88,13 +90,13 @@ const exportCSV = () => {
 
       <v-text-field
         v-model="search"
-        placeholder="Search..."
+        placeholder="Search amendments..."
         variant="outlined"
         density="compact"
         hide-details
         prepend-inner-icon="mdi-magnify"
         class="mr-2"
-        style="max-width: 200px"
+        style="max-width: 220px"
       />
 
       <v-btn color="primary" variant="flat" size="small" @click="exportCSV">
@@ -107,23 +109,23 @@ const exportCSV = () => {
         :items="filteredData"
         :headers="headersList"
         :search="search"
-        class="elevation-0"
+        class="elevation-0 text-body-2"
       >
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <v-chip :color="getStatusColor(item.status)" size="small" label>
             {{ item.status }}
           </v-chip>
         </template>
 
-        <template v-slot:item.amendmentControl="{ item }">
+        <template #item.amendmentControl="{ item }">
           <router-link :to="`/qms/approval-workflow/view/${item.id}`" class="text-primary font-weight-bold text-decoration-none">
             {{ item.amendmentControl || item.amendment_control }}
           </router-link>
         </template>
 
-        <template v-slot:item.draftAction="{ item }">
+        <template #item.draftAction="{ item }">
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <v-btn variant="tonal" color="primary" size="small" v-bind="menuProps">
                 Action
               </v-btn>

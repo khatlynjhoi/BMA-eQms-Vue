@@ -3,21 +3,23 @@
 .v-field--variant-filled {
   --v-input-control-height: 39px;
   --v-input-padding-top: 2px;
-  input.v-field__input {
-    padding-bottom: 2px;
-  }
+
+  input.v-field__input,
   .v-field__input {
     padding-bottom: 2px;
   }
+
   textarea {
     padding-top: 11px;
   }
 }
+
 .v-input--density-default {
   .v-field__input {
     min-height: 42px;
   }
 }
+
 .v-field--variant-outlined {
   &.v-field--focused {
     .v-field__outline {
@@ -25,6 +27,7 @@
     }
   }
 }
+
 .v-input {
   .v-input__details {
     padding-inline: 0;
@@ -32,14 +35,16 @@
 }
 
 .v-input--density-comfortable {
-  --v-input-control-height: 56px;
-  --v-input-padding-top: 17px;
+  --v-input-control-height: 46px;
+  --v-input-padding-top: 12px;
 }
+
 .v-label {
   font-size: 0.875rem;
   --v-medium-emphasis-opacity: 1;
   color: rgb(var(--v-theme-lightText));
 }
+
 .v-switch .v-label,
 .v-checkbox .v-label {
   opacity: 1;
@@ -47,9 +52,4 @@
 
 textarea.v-field__input {
   font-size: 14px;
-}
-
-.v-input--density-comfortable {
-  --v-input-control-height: 46px;
-  --v-input-padding-top: 12px;
 }

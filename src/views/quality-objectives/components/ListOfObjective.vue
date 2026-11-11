@@ -13,8 +13,8 @@ defineEmits<{
   <v-card border elevation="0" rounded="lg">
     <v-card-item class="py-3 px-4 border-b bg-grey-lighten-4">
       <div class="d-flex justify-space-between align-center">
-        <span class="text-subtitle-1 font-weight-bold text-primary">OBJECTIVES LIST</span>
-        <v-btn icon color="primary" variant="tonal" size="x-small" @click="$emit('add')">
+        <span class="text-subtitle-1 font-weight-bold text-primary">OBJECTIVES METRIC LIST</span>
+        <v-btn icon color="primary" variant="tonal" size="x-small" aria-label="Add Objective" @click="$emit('add')">
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>

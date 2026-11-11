@@ -1,27 +1,164 @@
+// ============================================================================
+// BMA e-QMS (Baliwag Maritime Academy - Quality Management System)
+// Main Stylesheet Entrypoint: src/scss/style.scss
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 1. Sass Variables & Custom Overrides
+// ----------------------------------------------------------------------------
 @import './variables';
-@import 'vuetify/styles/main.sass';
 @import './override';
-@import './layout/container';
-@import './layout/sidebar';
-@import './layout/footer';
-@import './layout/topbar';
 
-@import './components/VAlert';
-@import './components/VList';
-@import './components/VButtons';
-@import './components/VCard';
-@import './components/VBadge';
-@import './components/VBreadcrumb';
-@import './components/VPagination';
-@import './components/VField';
-@import './components/VInput';
-@import './components/VNavigationDrawer';
-@import './components/VShadow';
-@import './components/VTextField';
-@import './components/VTextarea';
-@import './components/VTimeline';
+// ----------------------------------------------------------------------------
+// 2. Framework & Vendor Stylesheets
+// ----------------------------------------------------------------------------
+// Vuetify 3 Core Styles
+@import 'vuetify/styles/main.sass';
 
-@import './pages/dashboards';
-@import './pages/authentication';
-
+// Third-Party Libraries
 @import 'vue3-perfect-scrollbar/style.css';
+@import '@vueform/vueform/dist/vueform.css';
+@import '@vueform/builder/vueform.css';
+
+// ----------------------------------------------------------------------------
+// 3. Base HTML & CSS Resets
+// ----------------------------------------------------------------------------
+html {
+  font-family: 'Public Sans', 'Roboto', sans-serif;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-on-background));
+}
+
+// ----------------------------------------------------------------------------
+// 4. Global Layout Containers & Structure
+// ----------------------------------------------------------------------------
+.main-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-wrapper {
+  flex: 1 1 auto;
+  padding: 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.container-fluid {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+// ----------------------------------------------------------------------------
+// 5. Vuetify Component Customizations
+// ----------------------------------------------------------------------------
+.v-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &--flat {
+    box-shadow: none !important;
+  }
+}
+
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+.v-table {
+  background: transparent !important;
+
+  th {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: rgba(var(--v-theme-on-surface), 0.7);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 6. Vueform Theme Overrides
+// ----------------------------------------------------------------------------
+.vf-vueform {
+  --vf-primary: rgb(var(--v-theme-primary));
+  --vf-radius-input: 8px;
+  font-family: inherit;
+}
+
+// ----------------------------------------------------------------------------
+// 7. ApexCharts Styling Tweaks
+// ----------------------------------------------------------------------------
+.apexcharts-canvas {
+  .apexcharts-tooltip {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8. Custom Scrollbar Integration
+// ----------------------------------------------------------------------------
+.ps {
+  &__rail-y {
+    width: 6px !important;
+    background-color: transparent !important;
+
+    &:hover > .ps__thumb-y,
+    &.ps--clicking .ps__thumb-y {
+      width: 6px !important;
+      background-color: rgba(var(--v-theme-on-surface), 0.3) !important;
+    }
+  }
+
+  &__thumb-y {
+    background-color: rgba(var(--v-theme-on-surface), 0.2) !important;
+    border-radius: 4px !important;
+    right: 2px !important;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 9. Utility Classes
+// ----------------------------------------------------------------------------
+.text-truncated {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}

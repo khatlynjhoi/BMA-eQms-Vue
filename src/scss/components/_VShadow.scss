@@ -1,23 +1,11 @@
 .elevation-24 {
-  box-shadow: $box-shadow !important;
+  box-shadow: 0 8px 24px rgba(19, 25, 32, 0.08) !important;
 }
 
 .v-menu {
   > .v-overlay__content {
     > .v-sheet {
-      box-shadow: $box-shadow;
+      box-shadow: 0 8px 24px rgba(19, 25, 32, 0.08);
     }
-  }
-}
-
-@each $color, $value in $theme-colors {
-  .#{$color}-shadow {
-    box-shadow: 0 14px 12px rgba(#{$value}, 0.2);
-    &:hover {
-      box-shadow: none;
-    }
-  }
-  .#{$color}-outline-shadow {
-    box-shadow: 0 0 0 2px rgba(#{$value}, 0.2);
   }
 }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
-import RiskAssessmentTableList from './components/RiskAssessmentTableList.vue';
-import AddRiskDescriptionModel from './components/AddRiskDescriptionModel.vue';
-import RiskReportModal from './components/RiskReportModal.vue';
+import RiskAssessmentTableList from './components/RiskAssessmentTableList_3.vue';
+import AddRiskDescriptionModel from './components/AddRiskDescriptionModel_3.vue';
+import RiskReportModal from './components/RiskReportModal_3.vue';
 import { GeneralController } from '@/stores/GeneralController';
 import alertService from '@/services/alertService';
 
@@ -86,8 +86,16 @@ const headers = [
   { title: 'Action to Minimize Risks', key: 'who_at_risk', align: 'start' as const }
 ];
 
+const cleanupBlobUrl = () => {
+  if (riskPDFModal.value?.link && riskPDFModal.value.link.startsWith('blob:')) {
+    URL.revokeObjectURL(riskPDFModal.value.link);
+    riskPDFModal.value.link = null;
+  }
+};
+
 const loadRiskAssessment = async () => {
   contentLoading.value = true;
+  cleanupBlobUrl();
   try {
     const targetId = route.params.riskId || route.params.id;
     const controller = new GeneralController();
@@ -119,6 +127,10 @@ const loadRiskAssessment = async () => {
 
 onMounted(() => {
   loadRiskAssessment();
+});
+
+onBeforeUnmount(() => {
+  cleanupBlobUrl();
 });
 
 const submitUpload = async () => {
@@ -158,7 +170,6 @@ const removeRisk = async (item: any) => {
   try {
     const payload = new FormData();
     payload.append('risk', safeEncrypt(item.id));
-    const controller = new GeneralController();
     await GeneralController.removeItem('risk-and-opportunity/remove-register-risk', payload);
     alertService.toast('Hazard description line removed.');
     await loadRiskAssessment();
@@ -240,6 +251,7 @@ const showPDF = () => {
             <v-btn color="success" variant="flat" size="small" @click="showPDF">
               View PDF Report
             </v-btn>
+            
             <v-btn type="submit" color="primary" variant="flat" size="small">
               Update Activity Assessment Header
             </v-btn>
@@ -266,8 +278,8 @@ const showPDF = () => {
       :when_action="when_action"
       :risk_decision="risk_decision"
       :opportunity_rating="opportunity_rating"
-      @addRisk="saveRisk"
-      @update:formData="riskFormData = $event"
+      @add-risk="saveRisk"
+      @update:form-data="riskFormData = $event"
     />
 
     <RiskReportModal

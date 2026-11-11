@@ -35,7 +35,7 @@ const { isLoading } = storeToRefs(uiStore);
 
 .bar {
   background-color: rgb(var(--v-theme-primary));
-  height: 5px;
+  height: 4px;
   width: 100%;
 }
 
@@ -45,8 +45,7 @@ const { isLoading } = storeToRefs(uiStore);
 
 .loading {
   opacity: 1;
-  animation: loading 2000ms ease-in-out;
-  animation-iteration-count: infinite;
+  animation: loading 2000ms ease-in-out infinite;
 }
 
 @keyframes loading {

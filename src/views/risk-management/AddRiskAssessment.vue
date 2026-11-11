@@ -5,25 +5,42 @@ import { GeneralController } from '@/stores/GeneralController';
 import alertService from '@/services/alertService';
 
 const router = useRouter();
-const contentLoading = ref(false);
 const formLoader = ref(false);
 
-const formData = ref({
+export interface RiskFormState {
+  activity: string;
+  date_created: string;
+  risks_description: string;
+  control_measures: string;
+  who_at_risk: string;
+  consequence: number | null;
+  likelihood: number | null;
+  action_to_minimize: string;
+  action_by_whom: string;
+  action_by_when: string | null;
+  action_effectiveness: string;
+  residual_risk: string;
+  risk_decision: string | null;
+  opportunity_identified: string;
+  opportunity_rate: string | null;
+}
+
+const formData = ref<RiskFormState>({
   activity: '',
   date_created: '',
   risks_description: '',
   control_measures: '',
   who_at_risk: '',
-  consequence: null as number | null,
-  likelihood: null as number | null,
+  consequence: null,
+  likelihood: null,
   action_to_minimize: '',
   action_by_whom: '',
-  action_by_when: null as string | null,
+  action_by_when: null,
   action_effectiveness: '',
   residual_risk: '',
-  risk_decision: null as string | null,
+  risk_decision: null,
   opportunity_identified: '',
-  opportunity_rate: null as string | null
+  opportunity_rate: null
 });
 
 const consequence = [
@@ -70,7 +87,7 @@ const opportunity_rating = [
 ];
 
 const submitUpload = async () => {
-  const confirmed = await alertService.confirm('Submit this new Risk and Opportunity assessment?');
+  const confirmed = await alertService.confirm('Submit this new Risk and Opportunity assessment (Clause 6.1)?');
   if (!confirmed.isConfirmed) return;
 
   formLoader.value = true;
@@ -82,10 +99,11 @@ const submitUpload = async () => {
 
     const response: any = await GeneralController.storeItem('risk-and-opportunity/store-risk', form);
     
-    if (response.status === 200) {
+    if (response && (response.status === 200 || response.ok)) {
       alertService.toast('Risk Assessment created successfully.');
-      const data = await response.json();
-      router.push(`/risk/risk-management/view/${data.data.id}`);
+      const data = response.data || (await response.json?.());
+      const targetId = data?.data?.id || data?.id;
+      router.push(`/risk-management/view/${targetId}`);
     } else {
       alertService.error('Failed to create Risk Assessment.');
     }
@@ -101,7 +119,9 @@ const submitUpload = async () => {
 <template>
   <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
     <v-card-item>
-      <v-card-title class="text-h5 font-weight-bold">CREATE RISK & OPPORTUNITY ASSESSMENT (CLAUSE 6.1)</v-card-title>
+      <v-card-title class="text-h5 font-weight-bold">
+        CREATE RISK & OPPORTUNITY ASSESSMENT (CLAUSE 6.1)
+      </v-card-title>
     </v-card-item>
     <v-divider />
 

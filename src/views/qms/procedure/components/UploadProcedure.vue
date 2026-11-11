@@ -55,7 +55,7 @@ const loadVersionPdf = async (encryptedVersionId: string) => {
   try {
     const controller = new GeneralController();
     const response = await controller.retrieveFile(encryptedVersionId, 'procedure/retrieve/version/view');
-    const pdfData = response instanceof Blob ? response : new Uint8Array(response).buffer as ArrayBuffer;
+    const pdfData = response instanceof Blob ? response : (new Uint8Array(response).buffer as ArrayBuffer);
     const blob = new Blob([pdfData], { type: 'application/pdf' });
     versionLink.value = URL.createObjectURL(blob);
   } catch (error) {
@@ -100,7 +100,6 @@ const uploadFiles = async () => {
     formData.append('description', description.value);
     formData.append('procedure', String(props.procedure));
 
-    const controller = new GeneralController();
     await GeneralController.storeItemFiles('procedure/store/file', formData);
 
     alertService.toast('Procedure revision uploaded successfully.');
@@ -127,13 +126,13 @@ const uploadFiles = async () => {
     <div v-else>
       <v-tabs v-model="subTab" color="primary" class="mb-4">
         <v-tab value="one" class="font-weight-medium">VERSION HISTORY</v-tab>
-        <v-tab value="two" class="font-weight-medium">UPLOAD REVISION</v-tab>
+        <v-tab value="two" class="font-weight-medium">UPLOAD MOC REVISION</v-tab>
       </v-tabs>
 
       <v-window v-model="subTab">
         <!-- Version History List -->
         <v-window-item value="one">
-          <v-list v-if="versionFiles.length > 0" border rounded class="py-0">
+          <v-list v-if="versionFiles.length > 0" border rounded="lg" class="py-0">
             <v-list-item
               v-for="(item, index) in versionFiles"
               :key="index"
@@ -152,7 +151,7 @@ const uploadFiles = async () => {
               </div>
             </v-list-item>
           </v-list>
-          <v-card v-else border elevation="0" class="pa-6 text-center text-secondary">
+          <v-card v-else border elevation="0" rounded="lg" class="pa-6 text-center text-secondary">
             <v-icon size="40" class="mb-2">mdi-history</v-icon>
             <p class="text-body-1 mb-0">No historical procedure revisions recorded.</p>
           </v-card>
@@ -182,7 +181,7 @@ const uploadFiles = async () => {
             />
             <v-textarea
               v-model="description"
-              label="Revision Details & Justification (Clause 6.3)*"
+              label="Revision Details & MOC Justification (Clause 6.3)*"
               variant="outlined"
               density="comfortable"
               rows="4"

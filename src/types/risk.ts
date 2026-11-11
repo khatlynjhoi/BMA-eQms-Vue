@@ -1,9 +1,9 @@
 // ISO 9001:2026 Clause 6.1.1 - Threat Risk Assessment
 export interface RiskAssessment {
-  id: string;
+  id: number | string;
   date: string;
   activityProcessProcedure: string;
-  departmentId?: number;
+  departmentId?: number | string;
   riskDescription?: string;
   severityRating?: number;
   likelihoodRating?: number;
@@ -14,7 +14,7 @@ export interface RiskAssessment {
 
 // ISO 9001:2026 Clause 6.1.2 - Opportunity Register
 export interface OpportunityItem {
-  id: string;
+  id: number | string;
   dateCreated: string;
   opportunityTitle: string;
   category: 'Process Enhancement' | 'Technology Adoption' | 'Facility Upgrade' | 'Resource Optimization';
@@ -28,7 +28,7 @@ export interface OpportunityItem {
 
 // ISO 9001:2026 Clause 6.2 - Quality Objectives Monitoring
 export interface QualityObjective {
-  id: string;
+  id: number | string;
   academicYear: string;
   procedure: string;
   objectivesCount: number;

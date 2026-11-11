@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   data: any[];
@@ -7,7 +8,15 @@ const props = defineProps<{
   role?: number;
 }>();
 
-const emit = defineEmits(['submit', 'validate', 'view', 'removed', 'viewPDF']);
+const emit = defineEmits<{
+  (e: 'submit', item: any): void;
+  (e: 'validate', item: any): void;
+  (e: 'view', item: any): void;
+  (e: 'removed', item: any): void;
+  (e: 'viewPDF', item: any): void;
+}>();
+
+const router = useRouter();
 
 const search = ref('');
 const selectedYear = ref<any>(null);
@@ -67,7 +76,7 @@ const showValidation = (item: any) => {
 
 const openRiskView = (item: any) => {
   if (item?.riskId) {
-    window.location.href = `/risk/risk-management/view/${item.riskId}`;
+    router.push(`/risk-management/view/${item.riskId}`);
   }
 };
 </script>
@@ -93,7 +102,7 @@ const openRiskView = (item: any) => {
         />
         <v-text-field
           v-model="search"
-          placeholder="Search..."
+          placeholder="Search objectives..."
           variant="outlined"
           density="compact"
           hide-details
@@ -110,17 +119,17 @@ const openRiskView = (item: any) => {
         :search="search"
         class="elevation-0 text-body-2"
       >
-        <template v-slot:item.date_created="{ item }">
+        <template #item.date_created="{ item }">
           <span>{{ new Date(item.date_created || item.createdAt).getFullYear() }}</span>
         </template>
 
-        <template v-slot:item.registeredRisk="{ item }">
+        <template #item.registeredRisk="{ item }">
           <div v-for="(riskRegister, index) in item.registeredRisk" :key="index" class="text-caption">
             <p class="mb-0">{{ Number(index) + 1 }}. {{ riskRegister.risks_description }}</p>
           </div>
         </template>
 
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <template v-if="item.status">
             <v-chip
               :color="getStatusColor(item.status.is_approved)"
@@ -140,9 +149,9 @@ const openRiskView = (item: any) => {
           </template>
         </template>
 
-        <template v-slot:item.academic="{ item }">
+        <template #item.academic="{ item }">
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <span v-bind="menuProps" class="text-primary font-weight-bold cursor-pointer">
                 {{ item.academic }}
               </span>
@@ -168,7 +177,7 @@ const openRiskView = (item: any) => {
 
     <v-dialog v-model="validationAlert.show" max-width="400">
       <v-card rounded="lg" class="pa-4">
-        <v-card-title class="px-0 pt-0 text-h6 font-weight-bold">Validation Information</v-card-title>
+        <v-card-title class="px-0 pt-0 text-h6 font-weight-bold">Validation Remarks</v-card-title>
         <v-card-text class="px-0">
           {{ validationAlert.content?.status?.remarks || 'Objective validation record.' }}
         </v-card-text>

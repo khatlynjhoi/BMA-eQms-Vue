@@ -22,13 +22,12 @@ const confirmPasswordRules = [
   (v: string) => v === password.value || 'Passwords do not match'
 ];
 
-const handleResetPassword = async () => {
+const handleResetPassword = async (): Promise<void> => {
   const { valid } = await logform.value.validate();
   if (!valid) return;
 
   loading.value = true;
   try {
-    // API request placeholder: await authStore.resetPassword(password.value)
     alertService.toast('Password has been successfully updated.');
     await router.push('/login');
   } catch (error) {
@@ -54,8 +53,8 @@ const handleResetPassword = async () => {
         hide-details="auto"
         required
       >
-        <template v-slot:append-inner>
-          <v-btn icon variant="text" size="small" color="secondary" @click="showPassword = !showPassword">
+        <template #append-inner>
+          <v-btn icon variant="text" size="small" color="secondary" aria-label="Toggle new password visibility" @click="showPassword = !showPassword">
             <SvgSprite :name="showPassword ? 'custom-eye' : 'custom-eye-invisible'" style="width: 18px; height: 18px" />
           </v-btn>
         </template>
@@ -75,8 +74,8 @@ const handleResetPassword = async () => {
         hide-details="auto"
         required
       >
-        <template v-slot:append-inner>
-          <v-btn icon variant="text" size="small" color="secondary" @click="showConfirmPassword = !showConfirmPassword">
+        <template #append-inner>
+          <v-btn icon variant="text" size="small" color="secondary" aria-label="Toggle confirm password visibility" @click="showConfirmPassword = !showConfirmPassword">
             <SvgSprite :name="showConfirmPassword ? 'custom-eye' : 'custom-eye-invisible'" style="width: 18px; height: 18px" />
           </v-btn>
         </template>

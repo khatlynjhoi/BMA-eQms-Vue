@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-interface AlertMessageData {
+export interface AlertMessageData {
   show: boolean;
   text?: string;
   type?: 'success' | 'error' | 'warning' | 'info';
@@ -9,6 +9,11 @@ interface AlertMessageData {
 
 const props = defineProps<{
   alertMessage: AlertMessageData;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:alertMessage', value: AlertMessageData): void;
+  (e: 'close'): void;
 }>();
 
 const alertTitle = computed(() => {
@@ -47,6 +52,11 @@ const circleColor = computed(() => {
     default: return 'rgba(33, 150, 243, 0.12)';
   }
 });
+
+const handleClose = () => {
+  props.alertMessage.show = false;
+  emit('close');
+};
 </script>
 
 <template>
@@ -80,7 +90,7 @@ const circleColor = computed(() => {
       </v-card-text>
 
       <v-card-actions class="justify-center pt-4 pb-2">
-        <v-btn color="primary" variant="flat" class="px-6" @click="alertMessage.show = false">
+        <v-btn color="primary" variant="flat" class="px-6" @click="handleClose">
           OKAY
         </v-btn>
       </v-card-actions>

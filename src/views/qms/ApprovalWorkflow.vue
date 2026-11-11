@@ -7,7 +7,7 @@ import SchoolDirector from './SchoolDirector.vue';
 
 const authStore = useAuthStore();
 
-// Role mapping: 1/Standard = Initiator, 6 = QMR, 9 = School Director Executive
+// Role mapping: 1/Standard = Initiator, 6 = QMR, 9 = Executive School Director
 const userRole = computed(() => Number(authStore.user?.roleID || 1));
 </script>
 

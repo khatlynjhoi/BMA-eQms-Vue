@@ -1,10 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import TextField from '@/views/form-builder/fields/TextField.vue';
-import SelectField from '@/views/form-builder/fields/SelectField.vue';
-import RadioField from '@/views/form-builder/fields/RadioField.vue';
-import CheckboxField from '@/views/form-builder/fields/CheckboxField.vue';
-import TableField from '@/views/form-builder/fields/TableField.vue';
 
 const props = defineProps<{
   formSelected: any;
@@ -20,31 +15,36 @@ const formData = ref<Record<string, any>>({});
 const errors = ref<Record<string, string>>({});
 
 const parsedSchema = computed(() => {
-  if (!props.formSelected?.form_schema) return [];
-  if (typeof props.formSelected.form_schema === 'string') {
+  const schema = props.formSelected?.form_schema || props.formSelected?.schema;
+  if (!schema) return [];
+  if (typeof schema === 'string') {
     try {
-      return JSON.parse(props.formSelected.form_schema);
+      return JSON.parse(schema);
     } catch (e) {
       console.error('Invalid schema JSON:', e);
       return [];
     }
   }
-  return props.formSelected.form_schema;
+  return schema;
 });
 
 const initializeFormData = () => {
   const newFormData: Record<string, any> = {};
   parsedSchema.value.forEach((field: any) => {
-    if (field.type === 'table') {
+    const existingAnswer = props.formSelected?.answers?.find(
+      (ans: any) => ans.field_key === field.model
+    );
+
+    if (existingAnswer) {
+      newFormData[field.model] = existingAnswer.field_value;
+    } else if (field.type === 'checkbox') {
       newFormData[field.model] = [];
     } else {
-      const existingAnswer = props.formSelected.answers?.find(
-        (ans: any) => ans.field_key === field.model
-      );
-      newFormData[field.model] = existingAnswer ? existingAnswer.field_value : '';
+      newFormData[field.model] = '';
     }
   });
   formData.value = newFormData;
+  errors.value = {};
 };
 
 watch(
@@ -55,22 +55,10 @@ watch(
   { immediate: true, deep: true }
 );
 
-const resolveComponent = (type: string) => {
-  switch (type) {
-    case 'text': return TextField;
-    case 'select': return SelectField;
-    case 'radio': return RadioField;
-    case 'checkbox': return CheckboxField;
-    case 'table': return TableField;
-    case 'date': return TextField;
-    default: return TextField;
-  }
-};
-
 const validateForm = () => {
   const newErrors: Record<string, string> = {};
   parsedSchema.value.forEach((field: any) => {
-    if (field.required && !formData.value[field.model]) {
+    if (field.required && (!formData.value[field.model] || (Array.isArray(formData.value[field.model]) && !formData.value[field.model].length))) {
       newErrors[field.model] = `${field.label || 'Field'} is required`;
     }
   });
@@ -89,7 +77,7 @@ const submitForm = () => {
   if (!validateForm()) return;
   emit('update', {
     data: formData.value,
-    response: props.formSelected.id
+    response: props.formSelected.id || props.formSelected.response
   });
   emit('update:modelValue', false);
 };
@@ -100,19 +88,99 @@ const submitForm = () => {
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
         <span class="text-h6 font-weight-bold">{{ formSelected?.form_name || 'Edit Form Request' }}</span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Edit Modal" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text class="pa-6">
-        <div v-for="field in parsedSchema" :key="field.id" class="mb-4">
-          <component
-            :is="resolveComponent(field.type)"
+        <div v-for="field in parsedSchema" :key="field.id || field.model" class="mb-4">
+          <label class="text-caption font-weight-bold text-secondary mb-1 d-block">{{ field.label }}</label>
+
+          <!-- Text / Number / Date Input -->
+          <v-text-field
+            v-if="field.type === 'text' || field.type === 'number' || field.type === 'date'"
             v-model="formData[field.model]"
-            :field="field"
+            :type="field.type === 'date' ? 'date' : (field.type === 'number' ? 'number' : 'text')"
             :error="hasError(field)"
             :error-messages="getErrorMessage(field)"
+            density="comfortable"
+            variant="outlined"
+            color="primary"
+            hide-details="auto"
+          />
+
+          <!-- Textarea -->
+          <v-textarea
+            v-else-if="field.type === 'textarea'"
+            v-model="formData[field.model]"
+            :error="hasError(field)"
+            :error-messages="getErrorMessage(field)"
+            density="comfortable"
+            variant="outlined"
+            color="primary"
+            rows="3"
+            hide-details="auto"
+          />
+
+          <!-- Select Dropdown -->
+          <v-select
+            v-else-if="field.type === 'select'"
+            v-model="formData[field.model]"
+            :items="field.options || []"
+            :error="hasError(field)"
+            :error-messages="getErrorMessage(field)"
+            density="comfortable"
+            variant="outlined"
+            color="primary"
+            hide-details="auto"
+          />
+
+          <!-- Radio Group -->
+          <v-radio-group
+            v-else-if="field.type === 'radio'"
+            v-model="formData[field.model]"
+            :error="hasError(field)"
+            :error-messages="getErrorMessage(field)"
+            density="comfortable"
+            hide-details="auto"
+          >
+            <v-radio
+              v-for="(opt, idx) in field.options"
+              :key="idx"
+              :label="opt"
+              :value="opt"
+              color="primary"
+            />
+          </v-radio-group>
+
+          <!-- Checkbox Group -->
+          <div v-else-if="field.type === 'checkbox'">
+            <v-checkbox
+              v-for="opt in field.options"
+              :key="opt"
+              v-model="formData[field.model]"
+              :label="opt"
+              :value="opt"
+              density="compact"
+              color="primary"
+              hide-details
+            />
+            <div v-if="hasError(field)" class="text-error text-caption mt-1">
+              {{ getErrorMessage(field) }}
+            </div>
+          </div>
+
+          <!-- Default Text Fallback -->
+          <v-text-field
+            v-else
+            v-model="formData[field.model]"
+            :error="hasError(field)"
+            :error-messages="getErrorMessage(field)"
+            density="comfortable"
+            variant="outlined"
+            color="primary"
+            hide-details="auto"
           />
         </div>
       </v-card-text>

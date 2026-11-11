@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import TextField from '@/views/form-builder/fields/TextField.vue';
-import SelectField from '@/views/form-builder/fields/SelectField.vue';
-import RadioField from '@/views/form-builder/fields/RadioField.vue';
-import CheckboxField from '@/views/form-builder/fields/CheckboxField.vue';
-import TableField from '@/views/form-builder/fields/TableField.vue';
+import TextField from '@/views/form-builder/components/fields/TextField.vue';
+import SelectField from '@/views/form-builder/components/fields/SelectField.vue';
+import RadioField from '@/views/form-builder/components/fields/RadioField.vue';
+import CheckboxField from '@/views/form-builder/components/fields/CheckboxField.vue';
+import TableField from '@/views/form-builder/components/fields/TableField.vue';
 
 const props = defineProps<{
   formSelected: any;

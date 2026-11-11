@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import CardHeader from '@/components/shared/CardHeader.vue';
-import DetailedView from './procedure/DetailedView.vue';
+import DetailedView from './components/DetailedView.vue';
 import { GeneralController } from '@/stores/GeneralController';
 
 const procedureList = ref<any[]>([]);
@@ -10,8 +10,8 @@ const subContentLoading = ref(false);
 
 const procedureDetails = ref({
   prodId: '' as string | number,
-  prodName: 'PROCEDURE NAME',
-  prodVersion: 'VERSION',
+  prodName: 'PROCEDURE SPECIFICATION',
+  prodVersion: 'VERSION 1.0',
   fileID: 0 as string | number,
   formLists: [] as any[]
 });
@@ -55,13 +55,13 @@ onMounted(async () => {
 <template>
   <v-row>
     <v-col cols="12" md="5">
-      <CardHeader title="QMS PROCEDURES" class="overflow-hidden">
+      <CardHeader title="QMS PROCEDURES (CLAUSE 7.5)" class="overflow-hidden">
         <div class="pa-2">
           <div v-if="contentLoading" class="d-flex justify-center align-center pa-8">
             <v-progress-circular indeterminate color="primary" size="40" />
           </div>
 
-          <v-list v-else border rounded class="py-0">
+          <v-list v-else border rounded="lg" class="py-0">
             <v-list-item
               v-for="(item, index) in procedureList"
               :key="index"
@@ -69,7 +69,7 @@ onMounted(async () => {
               @click="viewProcedure(item.id)"
             >
               <span class="text-body-1 font-weight-bold">{{ item.procedureName }}</span>
-              <template v-slot:append>
+              <template #append>
                 <v-chip size="x-small" color="success" variant="flat">
                   {{ item.formCount || 0 }} Forms
                 </v-chip>
@@ -81,7 +81,7 @@ onMounted(async () => {
     </v-col>
 
     <v-col cols="12" md="7">
-      <div v-if="subContentLoading" class="d-flex flex-column justify-center align-center pa-10 border rounded bg-surface">
+      <div v-if="subContentLoading" class="d-flex flex-column justify-center align-center pa-10 border rounded-lg bg-surface">
         <v-progress-circular indeterminate color="primary" size="48" />
         <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Loading Procedure File...</p>
       </div>

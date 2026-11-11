@@ -4,6 +4,17 @@ import { useGovernanceStore } from '@/stores/governance';
 import alertService from '@/services/alertService';
 import SvgSprite from '@/components/shared/SvgSprite.vue';
 
+export interface ClimateAssessmentItem {
+  id?: number | string;
+  academicYear: string;
+  departmentName: string;
+  physicalRiskImpact: 'Low' | 'Medium' | 'High' | 'Severe';
+  regulatoryImpact: 'Compliant' | 'Pending Review' | 'Non-Compliant';
+  mitigationStrategy: string;
+  evaluationNotes?: string;
+  status?: 'Draft' | 'Submitted' | 'Approved';
+}
+
 const governanceStore = useGovernanceStore();
 const search = ref('');
 const dialog = ref(false);
@@ -18,7 +29,7 @@ const headers = [
   { title: 'Actions', key: 'actions', align: 'end' as const, sortable: false }
 ];
 
-const newAssessment = ref({
+const newAssessment = ref<ClimateAssessmentItem>({
   academicYear: '2026-2027',
   departmentName: '',
   physicalRiskImpact: 'Low',
@@ -46,7 +57,15 @@ const handleSave = async () => {
     return;
   }
   dialog.value = false;
-  alertService.toast('Climate assessment recorded successfully.');
+  alertService.toast('Climate assessment recorded successfully (Clause 4.1).');
+  newAssessment.value = {
+    academicYear: '2026-2027',
+    departmentName: '',
+    physicalRiskImpact: 'Low',
+    regulatoryImpact: 'Compliant',
+    mitigationStrategy: '',
+    evaluationNotes: ''
+  };
 };
 </script>
 
@@ -54,12 +73,14 @@ const handleSave = async () => {
   <v-container fluid class="pa-6">
     <v-row class="mb-4" align="center">
       <v-col cols="12" md="8">
-        <h2 class="text-h4 font-weight-bold">Climate & Operational Context Assessment</h2>
-        <p class="text-subtitle-1 text-secondary">ISO 9001:2026 Clause 4.1 – Environmental & Regulatory Impact Log</p>
+        <h2 class="text-h4 font-weight-bold">CLIMATE & OPERATIONAL CONTEXT ASSESSMENT</h2>
+        <p class="text-subtitle-1 text-secondary">
+          ISO 9001:2026 Clause 4.1 – Environmental, Regulatory & Climate Context Evaluation
+        </p>
       </v-col>
       <v-col cols="12" md="4" class="text-right">
-        <v-btn color="primary" @click="dialog = true">
-          <template v-slot:prepend>
+        <v-btn color="primary" variant="flat" @click="dialog = true">
+          <template #prepend>
             <SvgSprite name="custom-plus-outline" style="width: 18px; height: 18px" />
           </template>
           New Assessment
@@ -67,8 +88,8 @@ const handleSave = async () => {
       </v-col>
     </v-row>
 
-    <v-card elevation="0" border>
-      <v-card-title class="pa-4">
+    <v-card elevation="0" border rounded="lg">
+      <v-card-title class="pa-4 border-b">
         <v-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"
@@ -82,29 +103,30 @@ const handleSave = async () => {
 
       <v-data-table
         :headers="headers"
-        :items="governanceStore.climateAssessments"
+        :items="governanceStore.climateAssessments || []"
         :search="search"
         :loading="governanceStore.loading"
-        class="elevation-0"
+        class="elevation-0 text-body-2"
       >
-        <template v-slot:item.physicalRiskImpact="{ item }">
+        <template #item.physicalRiskImpact="{ item }">
           <v-chip :color="getImpactColor(item.physicalRiskImpact)" size="small" label>
             {{ item.physicalRiskImpact }}
           </v-chip>
         </template>
 
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <v-chip
             :color="item.status === 'Approved' ? 'success' : item.status === 'Submitted' ? 'info' : 'warning'"
             size="small"
             variant="tonal"
+            label
           >
-            {{ item.status }}
+            {{ item.status || 'Draft' }}
           </v-chip>
         </template>
 
-        <template v-slot:item.actions="{ item }">
-          <v-btn icon variant="text" size="small" color="primary">
+        <template #item.actions="{ item }">
+          <v-btn icon variant="text" size="small" color="primary" aria-label="Edit Assessment">
             <SvgSprite name="custom-edit-outline" style="width: 16px; height: 16px" />
           </v-btn>
         </template>
@@ -113,21 +135,23 @@ const handleSave = async () => {
 
     <!-- Entry Dialog -->
     <v-dialog v-model="dialog" max-width="600">
-      <v-card>
-        <v-card-title class="pa-4 bg-primary text-white">Record Climate Assessment</v-card-title>
-        <v-card-text class="pa-4">
-          <v-row>
+      <v-card rounded="lg">
+        <v-card-title class="pa-4 bg-primary text-white font-weight-bold">
+          Record Climate & Context Assessment
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <v-row dense>
             <v-col cols="12" md="6">
-              <v-text-field v-model="newAssessment.academicYear" label="Academic Year" variant="outlined" density="compact" />
+              <v-text-field v-model="newAssessment.academicYear" label="Academic Year*" variant="outlined" density="compact" />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="newAssessment.departmentName" label="Department" variant="outlined" density="compact" required />
+              <v-text-field v-model="newAssessment.departmentName" label="Department*" variant="outlined" density="compact" required />
             </v-col>
             <v-col cols="12" md="6">
               <v-select
                 v-model="newAssessment.physicalRiskImpact"
                 :items="['Low', 'Medium', 'High', 'Severe']"
-                label="Physical Climate Risk"
+                label="Physical Climate Risk*"
                 variant="outlined"
                 density="compact"
               />
@@ -136,20 +160,20 @@ const handleSave = async () => {
               <v-select
                 v-model="newAssessment.regulatoryImpact"
                 :items="['Compliant', 'Pending Review', 'Non-Compliant']"
-                label="Regulatory Impact"
+                label="Regulatory Impact*"
                 variant="outlined"
                 density="compact"
               />
             </v-col>
             <v-col cols="12">
-              <v-textarea v-model="newAssessment.mitigationStrategy" label="Mitigation Action Plan" variant="outlined" rows="3" density="compact" />
+              <v-textarea v-model="newAssessment.mitigationStrategy" label="Mitigation Action Plan*" variant="outlined" rows="3" density="compact" />
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions class="pa-4">
+        <v-card-actions class="pa-4 border-t">
           <v-spacer />
           <v-btn variant="text" @click="dialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="handleSave">Submit Assessment</v-btn>
+          <v-btn color="primary" variant="flat" @click="handleSave">Submit Assessment</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

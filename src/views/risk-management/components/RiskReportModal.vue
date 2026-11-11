@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-
-const props = defineProps<{
+defineProps<{
   modelValue: boolean;
   formDetails: {
     isModalLoading: boolean;
@@ -10,7 +8,9 @@ const props = defineProps<{
   };
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+}>();
 
 const formModalClose = () => {
   emit('update:modelValue', false);
@@ -21,8 +21,8 @@ const formModalClose = () => {
   <v-dialog :model-value="modelValue" @update:model-value="formModalClose" max-width="1000" persistent>
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
-        <span class="text-h6 font-weight-bold">Risk Assessment PDF Report</span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <span class="text-h6 font-weight-bold">Risk Assessment PDF Report (Clause 6.1)</span>
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Report" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -33,7 +33,9 @@ const formModalClose = () => {
 
       <v-card-text v-else class="pa-4">
         <div class="mb-3">
-          <span class="text-caption text-secondary">{{ formDetails.content?.department?.name || formDetails.content?.department }}</span>
+          <span class="text-caption text-secondary">
+            {{ formDetails.content?.department?.name || formDetails.content?.department }}
+          </span>
         </div>
         <iframe
           v-if="formDetails.link"

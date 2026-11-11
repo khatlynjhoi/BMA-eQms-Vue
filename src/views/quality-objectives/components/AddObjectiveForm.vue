@@ -8,7 +8,10 @@ const props = defineProps<{
   };
 }>();
 
-const emit = defineEmits(['store', 'removed']);
+const emit = defineEmits<{
+  (e: 'store', payload: Record<string, any>): void;
+  (e: 'removed', qorId: number | string): void;
+}>();
 
 const formData = ref<Record<string, any>>({});
 
@@ -21,15 +24,15 @@ watch(
 );
 
 const formInputs = [
-  { label: 'QUALITY OBJECTIVE (CLAUSE 6.2.1)', model: 'quality_objective' },
-  { label: 'TARGET METRIC', model: 'target' },
-  { label: 'KEY PERFORMANCE INDICATOR (KPI)', model: 'key_performance_indicator' },
-  { label: 'MEASUREMENT METHODOLOGY', model: 'measurement_method' },
+  { label: 'QUALITY OBJECTIVE (CLAUSE 6.2.1)*', model: 'quality_objective' },
+  { label: 'TARGET METRIC*', model: 'target' },
+  { label: 'KEY PERFORMANCE INDICATOR (KPI)*', model: 'key_performance_indicator' },
+  { label: 'MEASUREMENT METHODOLOGY*', model: 'measurement_method' },
   { label: 'ACTUAL PERFORMANCE', model: 'actual_performance' },
   { label: 'TARGET MET (YES / NO)', model: 'target_met' },
-  { label: 'TIME FRAME / DEADLINE', model: 'time_frame' },
-  { label: 'PROOF OF EVIDENCE (DOCUMENT REF)', model: 'proof_of_evidence' },
-  { label: 'FREQUENCY OF REPORTING', model: 'frequency_of_report' }
+  { label: 'TIME FRAME / DEADLINE*', model: 'time_frame' },
+  { label: 'PROOF OF EVIDENCE (DOCUMENT REF)*', model: 'proof_of_evidence' },
+  { label: 'FREQUENCY OF REPORTING*', model: 'frequency_of_report' }
 ];
 </script>
 
@@ -37,13 +40,19 @@ const formInputs = [
   <v-card border elevation="0" rounded="lg">
     <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
       <span class="text-h6 font-weight-bold">
-        {{ modal.form?.qor_id ? 'Update Quality Objective' : 'Add Quality Objective Metric' }}
+        {{ modal.form?.qor_id ? 'Update Quality Objective Metric' : 'Add Quality Objective Metric (Clause 6.2.1)' }}
       </span>
       <div class="d-flex ga-2">
-        <v-btn v-if="modal.form?.qor_id" color="error" size="small" variant="flat" @click="emit('removed', modal.form?.qor_id)">
+        <v-btn
+          v-if="modal.form?.qor_id"
+          color="error"
+          size="small"
+          variant="flat"
+          @click="emit('removed', modal.form?.qor_id)"
+        >
           Remove Metric
         </v-btn>
-        <v-btn icon variant="text" color="white" size="small" @click="modal.show = false">
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Form" @click="modal.show = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </div>

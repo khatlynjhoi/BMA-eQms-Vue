@@ -8,7 +8,7 @@ export default [
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        parser: '@typescript-eslint/parser'
+        parser: tseslint.parser
       }
     }
   },

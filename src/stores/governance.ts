@@ -18,7 +18,7 @@ export const useGovernanceStore = defineStore('governance', {
   }),
 
   actions: {
-    async fetchClimateAssessments() {
+    async fetchClimateAssessments(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();
@@ -31,7 +31,7 @@ export const useGovernanceStore = defineStore('governance', {
       }
     },
 
-    async fetchInterestedParties() {
+    async fetchInterestedParties(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();

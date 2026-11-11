@@ -3,13 +3,14 @@ import { ref } from 'vue';
 import ComponentTitle from '@/components/shared/ComponentTitle.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 
-// component content
-const page = ref({ title: 'Color' });
-const subContent = ref({ content: 'Convey meaning through color. Out of the box you get access to all colors in the vuetify guidelines.' });
-const path = ref({ filepath: 'src/views/utilities/colors' });
+const page = ref({ title: 'Color Palette' });
+const subContent = ref({
+  content: 'Convey meaning through standardized e-QMS theme colors. Out of the box, you get access to all Vuetify design guidelines.'
+});
+const path = ref({ filepath: 'src/views/utilities/ColorPage.vue' });
 const link = ref({ filelink: 'https://vuetifyjs.com/en/styles/colors/' });
 
-const colors = ref([
+const colors = ref<string[]>([
   'primary',
   'lightprimary',
   'secondary',
@@ -31,14 +32,32 @@ const colors = ref([
 </script>
 
 <template>
-  <ComponentTitle :title="page.title" :subContent="subContent.content" :path="path.filepath" :link="link.filelink"></ComponentTitle>
+  <ComponentTitle
+    :title="page.title"
+    :subContent="subContent.content"
+    :path="path.filepath"
+    :link="link.filelink"
+  />
   <v-row>
-    <v-col cols="12" md="12">
-      <UiParentCard title="Color Palette">
+    <v-col cols="12">
+      <UiParentCard title="System Theme Colors">
         <v-row>
-          <v-col md="3" cols="12" v-for="(color, index) in colors" :key="index">
-            <v-sheet rounded="md" class="align-center justify-center d-flex" height="100" width="100%" :color="color"
-              >class: {{ color }}
+          <v-col
+            v-for="(color, index) in colors"
+            :key="index"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
+            <v-sheet
+              rounded="md"
+              class="align-center justify-center d-flex text-caption font-weight-bold"
+              height="100"
+              width="100%"
+              :color="color"
+            >
+              class: {{ color }}
             </v-sheet>
           </v-col>
         </v-row>

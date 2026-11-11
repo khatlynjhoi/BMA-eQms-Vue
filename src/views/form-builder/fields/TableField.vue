@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 
-interface ColumnDef {
+export interface ColumnDef {
   model: string;
   label: string;
   type: 'text' | 'textarea' | 'number';
@@ -22,7 +22,7 @@ const emit = defineEmits<{
 const source = ref<Record<string, any>[]>([]);
 
 const createEmptyRow = () => {
-  const row: Record<string, any> = { id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 4)}` };
+  const row: Record<string, any> = { id: `row_${Date.now()}_${Math.random().toString(36).substring(2, 6)}` };
   props.field.columns.forEach((col) => {
     row[col.model] = '';
   });
@@ -101,7 +101,15 @@ const removeRow = (index: number) => {
             />
           </td>
           <td class="text-center py-1">
-            <v-btn icon variant="text" size="x-small" color="error" :disabled="source.length <= 1" @click="removeRow(idx)">
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              color="error"
+              :disabled="source.length <= 1"
+              aria-label="Remove Row"
+              @click="removeRow(idx)"
+            >
               <v-icon size="16">mdi-close</v-icon>
             </v-btn>
           </td>

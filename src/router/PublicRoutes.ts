@@ -1,4 +1,6 @@
-const PublicRoutes = {
+import type { RouteRecordRaw } from 'vue-router';
+
+const PublicRoutes: RouteRecordRaw = {
   path: '/',
   component: () => import('@/layouts/blank/BlankLayout.vue'),
   meta: {
@@ -6,39 +8,47 @@ const PublicRoutes = {
   },
   children: [
     {
-      name: 'Login',
-      path: '/',
-      component: () => import('@/views/authentication/LoginPage.vue')
-    },
-    {
-      name: 'Authentication',
-      path: '/login',
-      component: () => import('@/views/authentication/LoginPage.vue')
+      name: 'DefaultLogin',
+      path: '',
+      component: () => import('@/views/authentication/LoginPage.vue'),
+      meta: { title: 'Sign In — BMA e-QMS' }
     },
     {
       name: 'Login',
-      path: '/login1',
-      component: () => import('@/views/authentication/auth1/LoginPage1.vue')
+      path: 'login',
+      component: () => import('@/views/authentication/LoginPage.vue'),
+      meta: { title: 'Sign In — BMA e-QMS' }
     },
     {
-      name: 'Register',
-      path: '/register1',
-      component: () => import('@/views/authentication/auth1/RegisterPage1.vue')
+      name: 'ForgotPassword',
+      path: 'forgot-password',
+      alias: ['forgot-pwd1'],
+      component: () => import('@/views/authentication/authForms/AuthForgotPwd.vue'),
+      meta: { title: 'Forgot Password — BMA e-QMS' }
     },
     {
-      name: 'Forgot Password',
-      path: '/forgot-pwd1',
-      component: () => import('@/views/authentication/auth1/ForgotPwd1.vue')
+      name: 'ResetPassword',
+      path: 'reset-password',
+      component: () => import('@/views/authentication/authForms/AuthResetPwd.vue'),
+      meta: { title: 'Reset Password — BMA e-QMS' }
     },
     {
-      name: 'Reset Password',
-      path: '/reset-pwd1',
-      component: () => import('@/views/authentication/auth1/ResetPwd1.vue')
+      name: 'CodeVerification',
+      path: 'code-verification',
+      component: () => import('@/views/authentication/authForms/AuthCodeVerification.vue'),
+      meta: { title: 'Two-Factor Verification — BMA e-QMS' }
     },
     {
-      name: 'Error 404',
-      path: '/error',
-      component: () => import('@/views/pages/maintenance/error/Error404Page.vue')
+      name: 'CheckMail',
+      path: 'check-mail',
+      component: () => import('@/views/authentication/authForms/AuthCheckMail.vue'),
+      meta: { title: 'Check Your Email — BMA e-QMS' }
+    },
+    {
+      name: 'Error404',
+      path: 'error',
+      component: () => import('@/views/pages/maintenance/error/Error404Page.vue'),
+      meta: { title: 'Page Not Found — BMA e-QMS' }
     }
   ]
 };

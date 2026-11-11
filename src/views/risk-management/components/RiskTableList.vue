@@ -7,7 +7,13 @@ const props = defineProps<{
   role?: number;
 }>();
 
-const emit = defineEmits(['submit', 'validate', 'view', 'edit', 'removed']);
+const emit = defineEmits<{
+  (e: 'submit', item: any): void;
+  (e: 'validate', item: any): void;
+  (e: 'view', id: number | string): void;
+  (e: 'edit', item: any): void;
+  (e: 'removed', item: any): void;
+}>();
 
 const search = ref('');
 const selectedYear = ref<string | null>(null);
@@ -96,17 +102,17 @@ const statusName = (status: number | undefined) => {
         :search="search"
         class="elevation-0 text-body-2"
       >
-        <template v-slot:item.date_created="{ item }">
+        <template #item.date_created="{ item }">
           <span>{{ item.date_created }}</span>
         </template>
 
-        <template v-slot:item.registeredRisk="{ item }">
+        <template #item.registeredRisk="{ item }">
           <div v-for="(riskRegister, index) in item.registeredRisk" :key="index" class="text-caption">
             <p class="mb-0">{{ Number(index) + 1 }}. {{ riskRegister.risks_description }}</p>
           </div>
         </template>
 
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <template v-if="item.status">
             <v-chip :color="getStatusColor(item.status.is_approved)" size="small" label>
               {{ statusName(item.status.is_approved) }}
@@ -120,9 +126,9 @@ const statusName = (status: number | undefined) => {
           </template>
         </template>
 
-        <template v-slot:item.activity="{ item }">
+        <template #item.activity="{ item }">
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <span v-bind="menuProps" class="text-primary font-weight-bold cursor-pointer">
                 {{ item.activity }}
               </span>

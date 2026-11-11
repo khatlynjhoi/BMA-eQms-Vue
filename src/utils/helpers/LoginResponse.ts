@@ -1,27 +1,39 @@
-interface LoginResponse {
-    token: string;
-    user: {
-        id: number;
-        username: string;
-        firstName: string;
-        lastName: string;
-    };
+export interface UserPayload {
+  id: number | string;
+  username?: string;
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  roleID?: number | string;
+  department?: string;
 }
 
-async function login(username: string, password: string): Promise<LoginResponse> {
-    const response = await fetch('http://your-laravel-domain.com/api/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email: username, password })
-    });
+export interface LoginResponse {
+  access_token?: string;
+  token?: string;
+  user: UserPayload;
+  message?: string;
+}
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-    }
+const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const baseUrl = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
-    return response.json();
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const response = await fetch(`${baseUrl}login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ email: username, password })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Authentication failed' }));
+    throw new Error(errorData.message || 'Login failed');
+  }
+
+  return response.json();
 }

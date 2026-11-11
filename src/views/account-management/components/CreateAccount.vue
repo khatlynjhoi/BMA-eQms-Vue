@@ -107,7 +107,7 @@ const submitForm = async () => {
               item-title="name"
               item-value="id"
               :rules="[rules.required]"
-              label="Assigned QMS Role*"
+              label="Assigned QMS Role (Clause 5.3)*"
               variant="outlined"
               density="compact"
               required

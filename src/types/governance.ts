@@ -1,8 +1,8 @@
 // ISO 9001:2026 Clause 4.1 - Context & Climate Considerations
 export interface ClimateAssessment {
-  id: string;
+  id: number | string;
   academicYear: string;
-  departmentId: number;
+  departmentId: number | string;
   departmentName: string;
   physicalRiskImpact: 'Low' | 'Medium' | 'High' | 'Severe';
   regulatoryImpact: 'Compliant' | 'Pending Review' | 'Non-Compliant';
@@ -15,7 +15,7 @@ export interface ClimateAssessment {
 
 // ISO 9001:2026 Clause 4.2 - Interested Parties Register (STCW / CHED / MARINA)
 export interface InterestedParty {
-  id: string;
+  id: number | string;
   stakeholderName: string;
   category: 'Regulatory Body' | 'Industry Partner' | 'Cadets' | 'Faculty & Staff';
   needsAndExpectations: string;
@@ -27,8 +27,8 @@ export interface InterestedParty {
 
 // ISO 9001:2026 Clause 5.1 & 7.3 - Quality Policy & Ethics Verification
 export interface QualityCultureRecord {
-  id: string;
-  employeeId: number;
+  id: number | string;
+  employeeId: number | string;
   employeeName: string;
   department: string;
   policyAcknowledged: boolean;

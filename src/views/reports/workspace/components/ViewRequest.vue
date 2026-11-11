@@ -20,8 +20,8 @@ const formModalClose = () => {
   <v-dialog :model-value="modelValue" @update:model-value="formModalClose" max-width="800">
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
-        <span class="text-h6 font-weight-bold">Preview Form Request Document</span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <span class="text-h6 font-weight-bold">Preview Form Request Document (Clause 7.5)</span>
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Preview" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -37,7 +37,7 @@ const formModalClose = () => {
         </div>
       </v-card-text>
 
-      <v-card-actions class="pa-4">
+      <v-card-actions class="pa-4 border-t">
         <v-spacer />
         <v-btn variant="text" @click="formModalClose">Close</v-btn>
       </v-card-actions>

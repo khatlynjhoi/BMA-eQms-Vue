@@ -41,7 +41,7 @@ import AuthLogin from './authForms/AuthLogin.vue';
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/src/assets/images/building.png');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('@/assets/images/building.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

@@ -78,7 +78,7 @@ const resetPassword = async (item: any) => {
   <div>
     <v-list border rounded="lg" class="py-0" aria-label="employee account list">
       <v-list-item v-for="(item, i) in accountList" :key="i" class="py-4 px-6 border-b">
-        <template v-slot:prepend>
+        <template #prepend>
           <v-avatar size="56" class="mr-4" rounded="md">
             <v-img :src="item.image || '/src/assets/images/users/avatar-1.png'" cover />
           </v-avatar>
@@ -101,9 +101,9 @@ const resetPassword = async (item: any) => {
           </div>
         </div>
 
-        <template v-slot:append>
+        <template #append>
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <v-btn variant="tonal" color="secondary" size="small" v-bind="menuProps">
                 Action
               </v-btn>

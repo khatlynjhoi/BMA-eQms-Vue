@@ -69,9 +69,9 @@ const filteredData = computed(() => {
         :search="search"
         class="elevation-0 text-body-2"
       >
-        <template v-slot:item.actionBtn="{ item }">
+        <template #item.actionBtn="{ item }">
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <v-btn variant="tonal" color="primary" size="small" v-bind="menuProps">
                 Action
               </v-btn>

@@ -1,17 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+export interface RevisionItem {
+  id?: number | string;
+  formName?: string;
+  updatedBy?: string;
+  updatedAt?: string;
+  updated_at?: string;
+  description?: string;
+  [key: string]: any;
+}
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
-    headers?: any[];
-    revisions: any[];
+    headers?: Array<{ title: string; key: string; sortable?: boolean; align?: 'start' | 'center' | 'end' }>;
+    revisions: RevisionItem[];
   }>(),
   {
     headers: () => [
       { title: 'Form / Procedure', key: 'formName', sortable: true },
       { title: 'Updated By', key: 'updatedBy', sortable: true },
       { title: 'Timestamp', key: 'updatedAt', sortable: true },
-      { title: 'Description of Change', key: 'description' }
+      { title: 'Description of Change (Clause 6.3)', key: 'description' }
     ]
   }
 );
@@ -31,16 +39,18 @@ const formatDate = (dateString: string) => {
     <v-data-table
       :headers="headers"
       :items="revisions"
-      class="elevation-0"
+      class="elevation-0 text-body-2"
     >
-      <template v-slot:top>
+      <template #top>
         <v-toolbar flat color="transparent" class="px-4">
-          <v-toolbar-title class="text-h6 font-weight-bold">Revision Audit History</v-toolbar-title>
+          <v-toolbar-title class="text-h6 font-weight-bold">
+            Revision Audit History (Clause 7.5.3)
+          </v-toolbar-title>
         </v-toolbar>
       </template>
 
-      <template v-slot:item.updatedAt="{ item }">
-        {{ formatDate(item.updatedAt || item.updated_at) }}
+      <template #item.updatedAt="{ item }">
+        <span>{{ formatDate(item.updatedAt || item.updated_at || '') }}</span>
       </template>
     </v-data-table>
   </v-card>

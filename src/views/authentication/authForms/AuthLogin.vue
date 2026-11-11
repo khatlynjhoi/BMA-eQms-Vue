@@ -36,11 +36,11 @@ onMounted(async () => {
   }
 });
 
-const handleLogin = async () => {
+const handleLogin = async (): Promise<void> => {
   if (!username.value || !password.value) return;
   loading.value = true;
   errorMessage.value = '';
-  
+
   try {
     await authStore.login(username.value.trim(), password.value);
   } catch (err: any) {
@@ -50,7 +50,7 @@ const handleLogin = async () => {
   }
 };
 
-const loginWithGoogle = () => {
+const loginWithGoogle = (): void => {
   authStore.loginWithGoogle();
 };
 </script>
@@ -82,8 +82,8 @@ const loginWithGoogle = () => {
         color="primary"
         hide-details="auto"
       >
-        <template v-slot:append-inner>
-          <v-btn icon variant="text" size="small" color="secondary" @click="showPassword = !showPassword">
+        <template #append-inner>
+          <v-btn icon variant="text" size="small" color="secondary" aria-label="Toggle password visibility" @click="showPassword = !showPassword">
             <SvgSprite :name="showPassword ? 'custom-eye' : 'custom-eye-invisible'" style="width: 18px; height: 18px" />
           </v-btn>
         </template>
@@ -129,7 +129,7 @@ const loginWithGoogle = () => {
       rounded="md"
       @click="loginWithGoogle"
     >
-      <template v-slot:prepend>
+      <template #prepend>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M21.0461 12.2099C21.0461 11.5553 20.9874 10.9259 20.8783 10.3217H12.1846V13.8966H17.1524C16.9342 15.0462 16.2797 16.0197 15.2979 16.6742V18.9987H18.2937C20.0391 17.3875 21.0461 15.0211 21.0461 12.2099Z" fill="#4285F4"/>
           <path d="M12.1844 21.2307C14.6767 21.2307 16.7662 20.4084 18.2935 18.9986L15.2977 16.6741C14.4753 17.2279 13.4264 17.5636 12.1844 17.5636C9.78441 17.5636 7.74525 15.944 7.01518 13.7622H3.94385V16.1454C5.46273 19.158 8.57602 21.2307 12.1844 21.2307Z" fill="#34A853"/>

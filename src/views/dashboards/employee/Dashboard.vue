@@ -23,7 +23,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container fluid class="pa-6">
+  <v-container fluid class="pa-0">
     <!-- Executive Welcome Header -->
     <v-row class="mb-4" align="center">
       <v-col cols="12" md="8">
@@ -39,10 +39,10 @@ onMounted(async () => {
     <!-- Executive Metrics Cards -->
     <v-row class="mb-6">
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="0" border class="pa-4">
+        <v-card elevation="0" border rounded="lg" class="pa-4">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <span class="text-caption text-secondary font-weight-bold">CLIMATE ASSESSMENTS</span>
+              <span class="text-caption text-secondary font-weight-bold">CLIMATE ASSESSMENTS (4.1)</span>
               <h3 class="text-h4 font-weight-bold mt-1">{{ governanceStore.climateAssessments?.length || 0 }}</h3>
             </div>
             <v-avatar color="primary" variant="tonal" size="48">
@@ -53,10 +53,10 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="0" border class="pa-4">
+        <v-card elevation="0" border rounded="lg" class="pa-4">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <span class="text-caption text-secondary font-weight-bold">ACTIVE THREAT RISKS</span>
+              <span class="text-caption text-secondary font-weight-bold">ACTIVE RISKS (6.1)</span>
               <h3 class="text-h4 font-weight-bold mt-1 text-warning">{{ riskStore.pendingRisks?.length || 0 }}</h3>
             </div>
             <v-avatar color="warning" variant="tonal" size="48">
@@ -67,10 +67,10 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="0" border class="pa-4">
+        <v-card elevation="0" border rounded="lg" class="pa-4">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <span class="text-caption text-secondary font-weight-bold">OPPORTUNITIES</span>
+              <span class="text-caption text-secondary font-weight-bold">OPPORTUNITIES (6.1.3)</span>
               <h3 class="text-h4 font-weight-bold mt-1 text-success">{{ riskStore.opportunities?.length || 0 }}</h3>
             </div>
             <v-avatar color="success" variant="tonal" size="48">
@@ -81,10 +81,10 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="0" border class="pa-4">
+        <v-card elevation="0" border rounded="lg" class="pa-4">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <span class="text-caption text-secondary font-weight-bold">OPEN CAPA LOGS</span>
+              <span class="text-caption text-secondary font-weight-bold">OPEN CAPA LOGS (10.2)</span>
               <h3 class="text-h4 font-weight-bold mt-1 text-error">{{ improvementStore.openCapas?.length || 0 }}</h3>
             </div>
             <v-avatar color="error" variant="tonal" size="48">
@@ -98,33 +98,33 @@ onMounted(async () => {
     <!-- Quick Directives & System Status -->
     <v-row class="mb-6">
       <v-col cols="12" md="7">
-        <v-card elevation="0" border class="pa-4 h-100">
+        <v-card elevation="0" border rounded="lg" class="pa-4 h-100">
           <v-card-title class="px-0 pt-0 text-h6 font-weight-bold mb-3">
             ISO 9001:2026 Directives & Quick Actions
           </v-card-title>
           <v-list lines="two" class="pa-0">
-            <v-list-item to="/context/climate" border rounded class="mb-2">
-              <template v-slot:prepend>
+            <v-list-item to="/context/climate" border rounded="md" class="mb-2">
+              <template #prepend>
                 <v-avatar color="primary" variant="tonal" size="40" class="mr-3">
                   <SvgSprite name="custom-document-text-outline" style="width: 20px; height: 20px" />
                 </v-avatar>
               </template>
-              <v-list-item-title class="font-weight-medium">Climate & Context Assessment</v-list-item-title>
-              <v-list-item-subtitle>Review Clause 4.1 environmental and regulatory context logs</v-list-item-subtitle>
+              <v-list-item-title class="font-weight-medium">Context & Climate Vulnerability</v-list-item-title>
+              <v-list-item-subtitle>Review Clause 4.1 environmental & operational context logs</v-list-item-subtitle>
             </v-list-item>
 
-            <v-list-item to="/risk-management/opportunities" border rounded class="mb-2">
-              <template v-slot:prepend>
+            <v-list-item to="/risk-management/opportunities" border rounded="md" class="mb-2">
+              <template #prepend>
                 <v-avatar color="success" variant="tonal" size="40" class="mr-3">
                   <SvgSprite name="custom-rocket-outline" style="width: 20px; height: 20px" />
                 </v-avatar>
               </template>
-              <v-list-item-title class="font-weight-medium">Opportunity Register</v-list-item-title>
-              <v-list-item-subtitle>Track Clause 6.1.2 institutional growth pursuits</v-list-item-subtitle>
+              <v-list-item-title class="font-weight-medium">Opportunity Pursuit Register</v-list-item-title>
+              <v-list-item-subtitle>Track Clause 6.1.3 institutional growth pursuits</v-list-item-subtitle>
             </v-list-item>
 
-            <v-list-item to="/qms/approval-workflow" border rounded class="mb-2">
-              <template v-slot:prepend>
+            <v-list-item to="/documents/amendment" border rounded="md" class="mb-2">
+              <template #prepend>
                 <v-avatar color="info" variant="tonal" size="40" class="mr-3">
                   <SvgSprite name="custom-edit-outline" style="width: 20px; height: 20px" />
                 </v-avatar>
@@ -133,8 +133,8 @@ onMounted(async () => {
               <v-list-item-subtitle>Manage Clause 6.3 document amendment requests</v-list-item-subtitle>
             </v-list-item>
 
-            <v-list-item to="/improvement/capa-log" border rounded>
-              <template v-slot:prepend>
+            <v-list-item to="/capa" border rounded="md">
+              <template #prepend>
                 <v-avatar color="error" variant="tonal" size="40" class="mr-3">
                   <SvgSprite name="custom-alert-outline" style="width: 20px; height: 20px" />
                 </v-avatar>
@@ -147,9 +147,9 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" md="5">
-        <v-card elevation="0" border class="pa-4 h-100">
+        <v-card elevation="0" border rounded="lg" class="pa-4 h-100">
           <v-card-title class="px-0 pt-0 text-h6 font-weight-bold mb-3">System Compliance Status</v-card-title>
-          
+
           <div class="py-2">
             <div class="d-flex justify-space-between mb-1">
               <span class="text-caption font-weight-bold">ISO 9001:2026 HLS Alignment</span>

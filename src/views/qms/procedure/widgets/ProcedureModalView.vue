@@ -10,7 +10,9 @@ defineProps<{
   versionLink?: string;
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+}>();
 
 const closeModal = () => {
   emit('update:modelValue', false);
@@ -21,8 +23,8 @@ const closeModal = () => {
   <v-dialog :model-value="modelValue" @update:model-value="closeModal" max-width="850">
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
-        <span class="text-h6 font-weight-bold">Version History Detail</span>
-        <v-btn icon variant="text" color="white" size="small" @click="closeModal">
+        <span class="text-h6 font-weight-bold">Version History Specification</span>
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Version Modal" @click="closeModal">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>

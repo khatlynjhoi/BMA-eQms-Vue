@@ -1,8 +1,8 @@
 // ISO 9001:2026 Clause 9.2 - Internal Audit Program
 export interface InternalAudit {
-  id: string;
+  id: number | string;
   auditNumber: string;
-  departmentId: number;
+  departmentId: number | string;
   departmentName: string;
   auditDate: string;
   leadAuditor: string;
@@ -17,7 +17,7 @@ export interface InternalAudit {
 
 // ISO 9001:2026 Clause 9.3 - Management Review Minutes
 export interface ManagementReviewRecord {
-  id: string;
+  id: number | string;
   meetingDate: string;
   chairperson: string;
   attendees: string[];
@@ -33,7 +33,7 @@ export interface ManagementReviewRecord {
 
 // ISO 9001:2026 Clause 10.2 - Corrective Action & Non-Conformity (CAPA) Log
 export interface CapaRecord {
-  id: string;
+  id: number | string;
   capaNumber: string;
   source: 'Internal Audit' | 'External Audit' | 'Customer Complaint' | 'Operational Failure';
   issueDescription: string;

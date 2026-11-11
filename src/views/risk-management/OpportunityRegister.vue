@@ -43,7 +43,7 @@ const registerOpportunity = () => {
       </v-col>
       <v-col cols="12" md="4" class="text-right">
         <v-btn color="primary" variant="flat" @click="registerOpportunity">
-          <template v-slot:prepend>
+          <template #prepend>
             <SvgSprite name="custom-plus-outline" style="width: 18px; height: 18px" />
           </template>
           Register Opportunity
@@ -69,9 +69,9 @@ const registerOpportunity = () => {
         :items="riskStore.opportunities || []"
         :search="search"
         :loading="riskStore.loading"
-        class="elevation-0"
+        class="elevation-0 text-body-2"
       >
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <v-chip :color="getStatusColor(item.status)" size="small" label>
             {{ item.status }}
           </v-chip>

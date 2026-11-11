@@ -4,44 +4,43 @@ export type DocumentModel = 'FormDocuments' | 'ProcedureDocuments';
 
 const LINKS = {
   print: {
-    FormDocuments: '/forms/form-documents/print',
-    ProcedureDocuments: '/procedure/procedure-documents/print'
+    FormDocuments: 'forms/form-documents/print',
+    ProcedureDocuments: 'procedure/procedure-documents/print'
   },
   download: {
-    FormDocuments: '/forms/form-documents/download',
-    ProcedureDocuments: '/procedure/procedure-documents/download'
+    FormDocuments: 'forms/form-documents/download',
+    ProcedureDocuments: 'procedure/procedure-documents/download'
   },
   analytics: {
-    FormDocuments: '/forms/form-documents/analytics',
-    ProcedureDocuments: '/procedure/procedure-documents/analytics'
+    FormDocuments: 'forms/form-documents/analytics',
+    ProcedureDocuments: 'procedure/procedure-documents/analytics'
   }
 };
 
-// 🔹 BASIC REQUESTS
+// BASIC REQUESTS
 export const get = async <T>(url: string): Promise<T> =>
   (await api(url)).json();
 
 export const post = async <T>(url: string, data?: any): Promise<T> =>
   (await api(url, {
     method: 'POST',
-    body: data ? JSON.stringify(data) : undefined
+    body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined
   })).json();
 
 export const postForm = async (url: string, form: FormData): Promise<Response> =>
   api(url, {
     method: 'POST',
-    body: form,
-    headers: {} // Allows browser to define multipart boundary
+    body: form
   });
 
-// 📁 FILE HANDLING
+// FILE HANDLING
 export const getFile = async (url: string): Promise<Blob> =>
   (await api(url)).blob();
 
 export const postFile = async (url: string, data: any): Promise<Blob> =>
   (await api(url, {
     method: 'POST',
-    body: JSON.stringify(data)
+    body: data instanceof FormData ? data : JSON.stringify(data)
   })).blob();
 
 export const download = async (
@@ -50,24 +49,22 @@ export const download = async (
 ): Promise<Blob> => {
   const res = await api(LINKS.download[model], {
     method: 'POST',
-    body: form,
-    headers: {}
+    body: form
   });
   return res.blob();
 };
 
-// 🖨️ PRINT
+// PRINT
 export const print = (
   model: DocumentModel,
   form: FormData
 ): Promise<Response> =>
   api(LINKS.print[model], {
     method: 'POST',
-    body: form,
-    headers: {}
+    body: form
   });
 
-// 📊 ANALYTICS
+// ANALYTICS
 export const analytics = async <T>(
   model: DocumentModel,
   data: any

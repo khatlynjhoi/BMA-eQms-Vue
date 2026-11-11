@@ -19,7 +19,6 @@ defineEmits<{
     <label class="text-caption font-weight-bold text-secondary mb-1 d-block">{{ field.label }}</label>
     <v-text-field
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
       :error="error"
       :error-messages="errorMessages"
       :type="field.type || 'text'"
@@ -27,6 +26,7 @@ defineEmits<{
       hide-details="auto"
       variant="outlined"
       color="primary"
+      @update:model-value="$emit('update:modelValue', $event)"
     />
   </div>
 </template>

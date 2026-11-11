@@ -42,8 +42,8 @@ onMounted(() => {
   preLoad();
 });
 
-const handleFormAction = (formId: number, mode: 'preview' | 'edit') => {
-  const form = buildFormList.value.find((f) => f.id === formId);
+const handleFormAction = (formId: number | string, mode: 'preview' | 'edit') => {
+  const form = buildFormList.value.find((f) => String(f.id) === String(formId));
   if (!form) return;
 
   const targetForm = { ...form };
@@ -67,8 +67,8 @@ const handleFormAction = (formId: number, mode: 'preview' | 'edit') => {
   contentActive.value = mode === 'preview' ? '3' : '2';
 };
 
-const previewForm = (formId: number) => handleFormAction(formId, 'preview');
-const editForm = (formId: number) => handleFormAction(formId, 'edit');
+const previewForm = (formId: number | string) => handleFormAction(formId, 'preview');
+const editForm = (formId: number | string) => handleFormAction(formId, 'edit');
 
 const saveForm = async (formToSave: any) => {
   try {
@@ -82,7 +82,7 @@ const saveForm = async (formToSave: any) => {
     formData.append('pageProperties', JSON.stringify(formToSave.pageProperties));
 
     const response = await service.storeForm(formData);
-    alertService.toast(response?.message || 'Form saved successfully.');
+    alertService.toast(response?.message || 'Form schema saved successfully.');
 
     selectedForm.value = {
       id: null,
@@ -90,7 +90,8 @@ const saveForm = async (formToSave: any) => {
       form_code: null,
       form_name: null,
       format_code: null,
-      form_schema: []
+      form_schema: [],
+      pageProperties: { pageSize: 'a4', orientation: 'portrait', pageModifiers: 'whole' }
     };
     await preLoad();
     contentActive.value = '1';
@@ -136,11 +137,11 @@ const handleFormPreviewClick = () => {
             @export="exportToJson"
           />
         </v-window-item>
-        
+
         <v-window-item value="2">
           <BuilderCanvas :form-list="formList" :form="selectedForm" @save="saveForm" />
         </v-window-item>
-        
+
         <v-window-item value="3">
           <PreviewForm v-if="selectedForm" :form-selected="selectedForm" @store="handleFormPreviewClick" />
         </v-window-item>

@@ -6,7 +6,7 @@ const pendingForms = ref<any[]>([]);
 
 onMounted(() => {
   pendingForms.value = [
-    { id: 3, title: 'Procedure C - Maritime Operations Manual', requestedBy: 'Capt. Smith', date: '2026-11-01' }
+    { id: 3, title: 'Procedure C - Maritime Operations Manual (v3.0 Revision)', requestedBy: 'Capt. Smith', date: '2026-11-01' }
   ];
 });
 
@@ -18,15 +18,15 @@ const review = (id: number | string) => {
 <template>
   <v-card border elevation="0" rounded="lg" class="pa-4">
     <v-card-title class="px-0 pt-0 text-h6 font-weight-bold mb-3">
-      Executive Sign-off: Pending Approvals (Clause 5.1 & 6.3)
+      Executive Sign-off: Pending Authorizations (Clause 5.1 & 6.3)
     </v-card-title>
 
-    <v-list v-if="pendingForms.length > 0" border rounded class="py-0">
+    <v-list v-if="pendingForms.length > 0" border rounded="lg" class="py-0">
       <v-list-item v-for="form in pendingForms" :key="form.id" class="py-3 px-4 border-b">
         <div class="d-flex justify-space-between align-center">
           <div>
             <h4 class="text-subtitle-1 font-weight-bold mb-0">{{ form.title }}</h4>
-            <span class="text-caption text-secondary">Requested by: {{ form.requestedBy }} | {{ form.date }}</span>
+            <span class="text-caption text-secondary">Initiated by: {{ form.requestedBy }} | Date: {{ form.date }}</span>
           </div>
           <v-btn color="primary" variant="flat" size="small" @click="review(form.id)">
             Review Proposal

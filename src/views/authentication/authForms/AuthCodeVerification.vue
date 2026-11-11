@@ -7,12 +7,11 @@ const router = useRouter();
 const otp = ref('');
 const loading = ref(false);
 
-const handleVerify = async () => {
+const handleVerify = async (): Promise<void> => {
   if (otp.value.length < 4) return;
-  
+
   loading.value = true;
   try {
-    // API verification call placeholder
     alertService.toast('Verification successful.');
     await router.push('/login');
   } catch (error) {
@@ -22,7 +21,7 @@ const handleVerify = async () => {
   }
 };
 
-const handleResendCode = () => {
+const handleResendCode = (): void => {
   alertService.toast('A new verification code has been sent to your email.');
 };
 </script>

@@ -1,54 +1,73 @@
 export { fakeBackend };
 
-interface User {
+interface FakeUser {
   id: number;
   username: string;
-  password: string;
+  password?: string;
   firstName: string;
   lastName: string;
+  role: string;
+  department: string;
 }
 
-interface ResponseBody {
+interface FakeResponseBody {
   id: number;
   username: string;
   firstName: string;
   lastName: string;
+  role: string;
   token: string;
 }
 
-function fakeBackend() {
-  const users = [{ id: 1, username: 'info@phoenixcoded.co', password: 'admin123', firstName: 'Phoenixcoded', lastName: '.com' }];
+function fakeBackend(): void {
+  const users: FakeUser[] = [
+    {
+      id: 1,
+      username: 'info@phoenixcoded.co',
+      password: 'admin123',
+      firstName: 'Quality Management',
+      lastName: 'Representative',
+      role: 'Quality Management Representative',
+      department: 'Executive Division'
+    }
+  ];
+
   const realFetch = window.fetch;
 
-  window.fetch = function (url: string, opts: { method: string; headers: { [key: string]: string }; body?: string }) {
+  window.fetch = function (
+    url: string | URL | Request,
+    opts?: RequestInit
+  ): Promise<Response> {
+    const urlString = typeof url === 'string' ? url : url.toString();
+    const requestOpts = opts || {};
+
     return new Promise<Response>((resolve, reject) => {
-      // wrap in timeout to simulate server api call
-      setTimeout(handleRoute, 500);
+      setTimeout(handleRoute, 300);
 
       function handleRoute() {
         switch (true) {
-          case url.endsWith('/users/authenticate') && opts.method === 'POST':
+          case urlString.endsWith('/users/authenticate') && requestOpts.method === 'POST':
             return authenticate();
-          case url.endsWith('/users') && opts.method === 'GET':
+          case urlString.endsWith('/users') && requestOpts.method === 'GET':
             return getUsers();
           default:
-            // pass through any requests not handled above
-            return realFetch(url, opts)
+            return realFetch(url, requestOpts)
               .then((response) => resolve(response))
               .catch((error) => reject(error));
         }
       }
 
-      // route functions
       function authenticate() {
         const { username, password } = body();
         const user = users.find((x) => x.username === username && x.password === password);
-        if (!user) return error('Username or password is incorrect');
+        if (!user) return error('Invalid e-QMS credentials.');
+
         return ok({
           id: user.id,
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role,
           token: 'fake-jwt-token'
         });
       }
@@ -58,26 +77,43 @@ function fakeBackend() {
         return ok(users);
       }
 
-      // helper functions
-      function ok(body: User[] | ResponseBody): void {
-        resolve({ ok: true, text: () => Promise.resolve(JSON.stringify(body)) } as Response);
+      function ok(data: FakeUser[] | FakeResponseBody): void {
+        resolve({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(JSON.stringify(data)),
+          json: () => Promise.resolve(data)
+        } as Response);
       }
 
       function unauthorized() {
-        resolve({ status: 401, text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized' })) } as Response);
+        resolve({
+          ok: false,
+          status: 401,
+          text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized session access.' })),
+          json: () => Promise.resolve({ message: 'Unauthorized session access.' })
+        } as Response);
       }
 
       function error(message: string) {
-        resolve({ status: 400, text: () => Promise.resolve(JSON.stringify({ message })) } as Response);
+        resolve({
+          ok: false,
+          status: 400,
+          text: () => Promise.resolve(JSON.stringify({ message })),
+          json: () => Promise.resolve({ message })
+        } as Response);
       }
 
-      function isAuthenticated() {
-        return opts.headers['Authorization'] === 'Bearer fake-jwt-token';
+      function isAuthenticated(): boolean {
+        const headers = requestOpts.headers as Record<string, string> | undefined;
+        return headers?.['Authorization'] === 'Bearer fake-jwt-token';
       }
 
-      function body() {
-        return opts.body && JSON.parse(opts.body);
+      function body(): any {
+        return requestOpts.body && typeof requestOpts.body === 'string'
+          ? JSON.parse(requestOpts.body)
+          : {};
       }
     });
-  } as typeof window.fetch; // Type assertion here
+  } as typeof window.fetch;
 }

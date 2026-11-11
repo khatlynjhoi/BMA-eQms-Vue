@@ -17,7 +17,6 @@ const emit = defineEmits<{
 }>();
 
 const modalTab = ref('one');
-const selectedFile = ref<File | null>(null);
 const fileError = ref('');
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -65,7 +64,7 @@ const handleFile = async (event: Event) => {
   <v-dialog :model-value="modelValue" @update:model-value="formModalClose" max-width="800">
     <v-card rounded="lg" class="pa-5">
       <v-card-title class="text-h5 d-flex align-center justify-space-between text-primary pa-0 mb-4">
-        <span class="font-weight-bold">ACCOUNT INFORMATION (CLAUSE 7.2)</span>
+        <span class="font-weight-bold">ACCOUNT INFORMATION (CLAUSE 7.2 COMPETENCE)</span>
         <v-btn color="primary" variant="flat" size="small" @click="formModalClose">Close</v-btn>
       </v-card-title>
 

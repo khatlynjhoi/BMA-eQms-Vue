@@ -1,9 +1,10 @@
+// @ts-ignore Vuetify provides this stylesheet at runtime without a type declaration.
 import 'vuetify/styles';
-import { type ThemeDefinition, createVuetify } from 'vuetify';
+import { createVuetify, type ThemeDefinition } from 'vuetify';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
-/* import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'; */
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
+
 const light: ThemeDefinition = {
   dark: false,
   colors: {
@@ -30,8 +31,8 @@ const light: ThemeDefinition = {
     borderLight: '#e8ebee',
     inputBorder: '#BEC8D0',
     containerBg: '#F8F9FA',
-    surface: '#fff',
-    'on-surface-variant': '#fff',
+    surface: '#ffffff',
+    'on-surface-variant': '#ffffff',
     facebook: '#4267b2',
     twitter: '#1da1f2',
     linkedin: '#0e76a8',
@@ -59,9 +60,7 @@ export default createVuetify({
   directives,
   icons: {
     defaultSet: 'mdi',
-    aliases: {
-      ...aliases
-    },
+    aliases,
     sets: {
       mdi
     }
@@ -73,15 +72,35 @@ export default createVuetify({
     }
   },
   defaults: {
-    VBtn: {},
+    VBtn: {
+      color: 'primary',
+      variant: 'flat'
+    },
     VCard: {
-      rounded: 'md'
+      rounded: 'lg',
+      elevation: 0
     },
     VTextField: {
-      rounded: 'lg'
+      variant: 'outlined',
+      density: 'compact',
+      color: 'primary'
+    },
+    VSelect: {
+      variant: 'outlined',
+      density: 'compact',
+      color: 'primary'
+    },
+    VAutocomplete: {
+      variant: 'outlined',
+      density: 'compact',
+      color: 'primary'
+    },
+    VTextarea: {
+      variant: 'outlined',
+      density: 'compact',
+      color: 'primary'
     },
     VTooltip: {
-      // set v-tooltip default location to top
       location: 'top'
     }
   }

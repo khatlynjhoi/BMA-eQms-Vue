@@ -1,7 +1,7 @@
 <template>
-  <div class="logo" style="display: flex; align-items: center; height: 28px;">
-    <RouterLink to="/dashboard" aria-label="logo" style="display: flex; align-items: center;">
-      <img src="@/assets/images/eQms-logo.png" alt="BMA eQMS Logo" style="height:6em; object-fit: contain;" />
+  <div class="logo d-flex align-center" style="height: 28px;">
+    <RouterLink to="/dashboard" aria-label="BMA e-QMS Dashboard" class="d-flex align-center text-decoration-none">
+      <img src="@/assets/images/eQms-logo.png" alt="BMA eQMS Logo" style="height: 3.5rem; object-fit: contain;" />
     </RouterLink>
   </div>
 </template>

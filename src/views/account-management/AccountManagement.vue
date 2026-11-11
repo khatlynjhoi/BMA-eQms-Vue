@@ -34,7 +34,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <CardHeader title="ACCOUNT MANAGEMENT" class="overflow-hidden">
+  <CardHeader title="ACCOUNT MANAGEMENT (CLAUSES 5.3 & 7.2)" class="overflow-hidden">
     <div class="pa-2">
       <template v-if="contentLoading">
         <div class="d-flex justify-center align-center pa-10">
@@ -42,7 +42,7 @@ onMounted(() => {
         </div>
       </template>
       <template v-else>
-        <v-tabs v-model="tab" color="primary" class="px-6 mb-4">
+        <v-tabs v-model="tab" color="primary" class="px-6 mb-4 border-b">
           <v-tab value="one" class="font-weight-medium">EMPLOYEE LIST</v-tab>
           <v-tab value="two" class="font-weight-medium">CREATE ACCOUNT</v-tab>
         </v-tabs>

@@ -45,7 +45,7 @@ const handleUpload = async () => {
     return;
   }
 
-  const confirmed = await alertService.confirm('Are you sure you want to submit this document amendment request?');
+  const confirmed = await alertService.confirm('Submit this document amendment proposal for evaluation?');
   if (!confirmed.isConfirmed) return;
 
   formLoader.value = true;
@@ -56,13 +56,12 @@ const handleUpload = async () => {
     formData.append('category', category.value);
     formData.append('value', value.value);
 
-    const controller = new GeneralController();
-    const response = await GeneralController.storeItem('amendment/create', formData);
-    if (response.ok) {
-      alertService.toast('Amendment request created successfully.');
+    const response: any = await GeneralController.storeItem('amendment/create', formData);
+    if (response?.ok || response?.status === 200) {
+      alertService.toast('Amendment proposal submitted successfully.');
       router.push('/qms/approval-workflow');
     } else {
-      alertService.error('Failed to submit amendment request.');
+      alertService.error('Failed to submit amendment proposal.');
     }
   } catch (err) {
     console.error('Upload error:', err);
@@ -76,14 +75,16 @@ const handleUpload = async () => {
 <template>
   <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
     <v-card-item>
-      <v-card-title class="text-h5 font-weight-bold">Create Document Amendment (Clause 6.3)</v-card-title>
+      <v-card-title class="text-h5 font-weight-bold">
+        CREATE DOCUMENT AMENDMENT PROPOSAL (CLAUSE 6.3)
+      </v-card-title>
     </v-card-item>
     <v-divider />
-    
+
     <v-card-text class="pa-6">
       <div v-if="formLoader" class="d-flex flex-column justify-center align-center pa-10">
         <v-progress-circular indeterminate color="primary" size="48" />
-        <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Submitting Amendment Request...</p>
+        <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Submitting Amendment Proposal...</p>
       </div>
 
       <v-form v-else @submit.prevent="handleUpload">
@@ -96,7 +97,7 @@ const handleUpload = async () => {
               variant="outlined"
               density="compact"
               required
-              @update:modelValue="categoryData"
+              @update:model-value="categoryData"
             />
           </v-col>
 
@@ -131,7 +132,7 @@ const handleUpload = async () => {
           <v-col cols="12">
             <v-textarea
               v-model="description"
-              label="Justification & Description of Changes*"
+              label="Justification & Description of Changes (Clause 6.3)*"
               variant="outlined"
               density="compact"
               rows="4"
@@ -141,7 +142,7 @@ const handleUpload = async () => {
 
           <v-col cols="12" class="text-right">
             <v-btn type="submit" color="primary" variant="flat">
-              Submit Amendment Request
+              Submit Amendment Proposal
             </v-btn>
           </v-col>
         </v-row>

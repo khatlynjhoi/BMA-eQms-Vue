@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-interface ConfirmData {
+export interface ConfirmData {
   show: boolean;
   title?: string;
   message?: string;
@@ -13,7 +13,10 @@ const props = defineProps<{
   confirmData: ConfirmData;
 }>();
 
-const emit = defineEmits(['confirm', 'cancel']);
+const emit = defineEmits<{
+  (e: 'confirm', payload?: any): void;
+  (e: 'cancel'): void;
+}>();
 
 const formattedTitle = computed(() => (props.confirmData.title || 'CONFIRMATION').toUpperCase());
 
@@ -85,7 +88,7 @@ const handleCancel = () => {
         {{ confirmData.message }}
       </v-card-text>
 
-      <v-card-actions class="justify-center gap-2 pt-4">
+      <v-card-actions class="justify-center ga-2 pt-4">
         <v-btn variant="outlined" color="secondary" class="px-5" @click="handleCancel">
           Cancel
         </v-btn>

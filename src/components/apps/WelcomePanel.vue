@@ -1,111 +1,56 @@
-<script lang="ts">
-import { defineComponent, type PropType } from 'vue'; // Import PropType
+<script setup lang="ts">
+interface Props {
+  userName: string;
+  userRole?: string;
+}
 
-export default defineComponent({
-    name: 'WelcomePanel',
-    props: {
-        userName: {
-            type: String,
-            required: true,
-        },
-        userRole: {
-            type: String,
-            default: 'User',
-        },
-    },
+withDefaults(defineProps<Props>(), {
+  userRole: 'Process Owner'
 });
 </script>
 
 <template>
-    <v-card class="welcomeBanner text-surface overflow-hidden" elevation="0" rounded="lg">
-        <v-card-text class="py-5 px-md-12 px-6">
-            <v-row>
-                <v-col cols="12" xl="6" md="7" sm="10">
-                    <div class="pb-md-8 pt-md-7 pt-5 pb-6">
-                        <h2 class="text-sm-h2 text-h3">Welcome {{ userName }}!</h2>
-                        <p class="text-h6 mb-7">
-                            To centralize all quality-related data and information into a single, easily searchable
-                            repository, enabling quick retrieval and informed decision-making.
-                        </p>
-                        <!--  <v-btn color="white" variant="outlined" rounded="md">Exclusive on Themeforest</v-btn> -->
-                    </div>
-                </v-col>
-            </v-row>
-        </v-card-text>
-    </v-card>
+  <v-card class="welcomeBanner text-surface overflow-hidden" elevation="0" rounded="lg">
+    <v-card-text class="py-6 px-md-12 px-6">
+      <v-row>
+        <v-col cols="12" xl="7" md="8" sm="10">
+          <div class="py-4">
+            <h2 class="text-h3 font-weight-bold mb-2">Welcome back, {{ userName }}!</h2>
+            <div class="d-flex align-center ga-2 mb-4">
+              <v-chip color="white" size="small" variant="flat" label class="font-weight-bold text-primary">
+                {{ userRole }}
+              </v-chip>
+              <span class="text-caption text-white opacity-80">ISO 9001:2026 e-QMS Workspace</span>
+            </div>
+            <p class="text-body-1 opacity-90 mb-0" style="max-width: 640px">
+              Centralized quality management repository for streaming departmental processes, tracking nonconformities, and facilitating evidence-based decision making.
+            </p>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
 </template>
-<style lang="scss">
-.welcomeBanner {
-    background: rgb(var(--v-theme-darksuccess));
-    position: relative;
 
-    &::after {
-        content: '';
-        background-image: url(@/assets/images/analytics/img-dropbox-bg.svg);
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: -1;
-        opacity: 0.5;
-        background-position: bottom right;
-        background-size: 100%;
-        background-repeat: no-repeat;
-    }
+<style lang="scss" scoped>
+.welcomeBanner {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, #1565C0 100%);
+  position: relative;
+
+  &::after {
+    content: '';
+    background-image: url(@/assets/images/analytics/img-dropbox-bg.svg);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    opacity: 0.25;
+    background-position: bottom right;
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+  }
 }
 </style>
-
-<!-- <template>
-    <div class="welcome-panel">
-        <h1>Welcome, {{ userName }}!</h1>
-        <p class="user-info">Role: {{ userRole }}</p>
-        <p class="greeting">We're glad to have you here. Your dashboard provides quick access to important tasks.</p>
-    </div>
-</template>
-
-<script>
-export default {
-    name: 'WelcomePanel',
-    props: {
-        userName: {
-            type: String,
-            required: true,
-        },
-        userRole: {
-            type: String,
-            default: 'User',
-        },
-    },
-};
-</script>
-
-<style scoped>
-.welcome-panel {
-    background-color: #e0f2f7;
-    /* Light blue background */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.welcome-panel h1 {
-    color: #2196f3;
-    /* Blue heading */
-    margin-bottom: 10px;
-    font-size: 2.5em;
-}
-
-.welcome-panel .user-info {
-    color: #666;
-    font-size: 1.1em;
-    margin-bottom: 15px;
-}
-
-.welcome-panel .greeting {
-    color: #555;
-    font-size: 1em;
-    line-height: 1.5;
-}
-</style> -->

@@ -72,42 +72,41 @@ const convertDate = (current: string) => {
       <v-data-table
         :items="filteredItems"
         :headers="headersList"
-        :search="search"
         class="elevation-0 text-body-2"
       >
-        <template v-slot:item.created_at="{ item }">
-          <span>{{ convertDate(item.created_at) }}</span>
+        <template #item.created_at="{ item }">
+          <span>{{ convertDate(item.raw.created_at) }}</span>
         </template>
 
-        <template v-slot:item.status="{ item }">
-          <template v-if="item.status !== null">
-            <v-chip color="success" size="small" label>
+        <template #item.status="{ item }">
+          <template v-if="item.raw.status !== null && item.raw.status !== undefined">
+            <v-chip color="success" size="small" label @click="emit('view', item.raw)">
               View Report
             </v-chip>
           </template>
           <template v-else>
             <v-chip color="secondary" size="small" label>Draft</v-chip>
-            <v-btn size="x-small" color="primary" variant="flat" class="ms-2" @click="emit('submit', item)">
+            <v-btn size="x-small" color="primary" variant="flat" class="ms-2" @click="emit('submit', item.raw)">
               Submit
             </v-btn>
           </template>
         </template>
 
-        <template v-slot:item.form_name="{ item }">
+        <template #item.form_name="{ item }">
           <v-menu>
-            <template v-slot:activator="{ props: menuProps }">
+            <template #activator="{ props: menuProps }">
               <span v-bind="menuProps" class="text-primary font-weight-bold cursor-pointer">
-                {{ item.form_name }}
+                {{ item.raw.form_name }}
               </span>
             </template>
             <v-list border density="compact">
-              <v-list-item @click="emit('view', item)">
+              <v-list-item @click="emit('view', item.raw)">
                 <v-list-item-title>View Document</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="emit('edit', item)">
+              <v-list-item @click="emit('edit', item.raw)">
                 <v-list-item-title class="text-info">Edit Response</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="emit('removed', item)">
+              <v-list-item @click="emit('removed', item.raw)">
                 <v-list-item-title class="text-error">Remove Request</v-list-item-title>
               </v-list-item>
             </v-list>

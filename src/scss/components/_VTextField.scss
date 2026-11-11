@@ -6,6 +6,7 @@
   color: rgb(var(--v-theme-inputBorder));
   --v-field-border-opacity: 1;
 }
+
 .inputWithbg {
   .v-field--variant-outlined {
     background-color: rgba(0, 0, 0, 0.025);
@@ -15,6 +16,7 @@
 .v-select {
   .v-field {
     font-size: 0.875rem;
+
     .v-field__input {
       > input {
         height: 90%;

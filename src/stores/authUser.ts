@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { fetchWrapper } from '@/utils/helpers/fetch-wrapper';
 import type { User } from './auth';
 
-const rawApiUrl = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 const baseUrl = rawApiUrl.endsWith('/') ? `${rawApiUrl}users` : `${rawApiUrl}/users`;
 
 interface UsersState {
@@ -19,7 +19,7 @@ export const useUsersStore = defineStore('users', {
   }),
 
   actions: {
-    async getAll() {
+    async getAll(): Promise<void> {
       this.loading = true;
       this.error = null;
       try {

@@ -1,76 +1,99 @@
-// src/composables/useAuth.ts
-
 import { ref } from 'vue';
-import { useApi } from './useApi'; // Import the API composable
-import type { User, AuthResponse } from '../types'; // Import types
+import { useApi } from './useApi';
+
+export interface User {
+  id: number | string;
+  name?: string;
+  fullname?: string;
+  email: string;
+  role?: string;
+  roleID?: number | string;
+  department?: string;
+  status?: number;
+  image?: string;
+}
+
+export interface AuthResponse {
+  access_token?: string;
+  token?: string;
+  user: User;
+  message?: string;
+}
 
 export function useAuth() {
-    const token = ref<string | null>(localStorage.getItem('laravel_api_token'));
-    const user = ref<User | null>(null);
+  const token = ref<string | null>(localStorage.getItem('laravel_api_token'));
+  const user = ref<User | null>(null);
 
-    // Use the API composable for network requests
-    const { callApi, loading, error, message } = useApi();
+  const { callApi, loading, error, message } = useApi();
 
-    /**
-     * Handles user login.
-     * @param email User's email
-     * @param password User's password
-     */
-    const login = async (emailValue: string, passwordValue: string) => {
-        const response = await callApi<AuthResponse>('/login', 'POST', {
-            email: emailValue,
-            password: passwordValue,
-        });
+  /**
+   * Handles user authentication login.
+   */
+  const login = async (emailValue: string, passwordValue: string): Promise<boolean> => {
+    const response = await callApi<AuthResponse>('/login', 'POST', {
+      email: emailValue,
+      password: passwordValue,
+    });
 
-        if (response && response.access_token) {
-            token.value = response.access_token;
-            user.value = response.user;
-            localStorage.setItem('laravel_api_token', response.access_token);
-            message.value = 'Login successful!';
-        } else {
-            token.value = null;
-            user.value = null;
-            localStorage.removeItem('laravel_api_token');
-            error.value = 'Login failed. Please check your credentials.';
-        }
-    };
+    const accessToken = response?.access_token || response?.token;
 
-    /**
-     * Handles user logout.
-     */
-    const logout = () => {
-        token.value = null;
-        user.value = null;
-        localStorage.removeItem('laravel_api_token');
-        message.value = 'Logged out successfully.';
-        error.value = '';
-    };
+    if (response && accessToken) {
+      token.value = accessToken;
+      user.value = response.user;
+      localStorage.setItem('laravel_api_token', accessToken);
+      message.value = 'e-QMS Sign-in successful.';
+      return true;
+    } else {
+      token.value = null;
+      user.value = null;
+      localStorage.removeItem('laravel_api_token');
+      if (!error.value) {
+        error.value = 'Authentication failed. Please verify credentials.';
+      }
+      return false;
+    }
+  };
 
-    /**
-     * Fetches the authenticated user's profile.
-     */
-    const fetchProfile = async () => {
-        if (!token.value) {
-            error.value = 'Not authenticated. Please log in to fetch profile.';
-            return;
-        }
-        const response = await callApi<{ user: User }>('/user', 'GET', undefined, token.value);
-        if (response?.user) {
-            user.value = response.user;
-        } else {
-            error.value = 'Failed to fetch user profile.';
-        }
-    };
+  /**
+   * Handles user logout and revokes authentication session.
+   */
+  const logout = async (): Promise<void> => {
+    if (token.value) {
+      await callApi('/logout', 'POST', undefined, token.value);
+    }
+    token.value = null;
+    user.value = null;
+    localStorage.removeItem('laravel_api_token');
+    message.value = 'Logged out successfully.';
+    error.value = '';
+  };
 
-    return {
-        token,
-        user,
-        login,
-        logout,
-        fetchProfile,
-        // Expose loading, error, message from useApi for auth operations
-        loading: loading,
-        error: error,
-        message: message,
-    };
+  /**
+   * Fetches the authenticated user profile and roles (Clause 5.3).
+   */
+  const fetchProfile = async (): Promise<User | null> => {
+    if (!token.value) {
+      error.value = 'Not authenticated. Please log in.';
+      return null;
+    }
+    const response = await callApi<{ user: User }>('/user', 'GET', undefined, token.value);
+    if (response?.user) {
+      user.value = response.user;
+      return response.user;
+    } else {
+      error.value = 'Failed to fetch user profile.';
+      return null;
+    }
+  };
+
+  return {
+    token,
+    user,
+    login,
+    logout,
+    fetchProfile,
+    loading,
+    error,
+    message,
+  };
 }

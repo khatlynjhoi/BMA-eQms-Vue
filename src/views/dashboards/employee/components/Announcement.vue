@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import AnnouncementPost from '@/views/widgets/AnnouncementPost.vue';
+import AnnouncementPost from '../widgets/AnnouncementPost.vue';
 import { GeneralController } from '@/stores/GeneralController';
 import alertService from '@/services/alertService';
 
@@ -21,8 +21,11 @@ const announcementPost = ref<any[]>([]);
 const fetchData = async () => {
   isLoading.value = true;
   try {
-    const controller = new GeneralController();
-    const response: any = await controller.retrieveData('announcement/retrieve-data', { search: '' }, 'data');
+    const response: any = await GeneralController.retrieveData(
+      'announcement/retrieve-data',
+      { search: '' },
+      'data'
+    );
     if (response) {
       announcementPost.value = response.announcements || [];
       departments.value = [
@@ -110,8 +113,8 @@ const deleteAnnouncement = async (id: number) => {
   try {
     const formData = new FormData();
     formData.append('announcement', String(id));
-    const response = await GeneralController.removeItem('announcement/remove-announcement', formData);
-    if (response.ok) {
+    const response: any = await GeneralController.removeItem('announcement/remove-announcement', formData);
+    if (response?.ok || response?.status === 200) {
       alertService.toast('Announcement removed.');
       await fetchData();
     }
@@ -130,7 +133,7 @@ const deleteAnnouncement = async (id: number) => {
         <h3 class="text-h5 font-weight-bold">Academy Directives & Announcements</h3>
         <p class="text-caption text-secondary">ISO 9001:2026 Clause 7.4 Institutional Communication Board</p>
       </div>
-      <v-btn color="primary" @click="showModal = true">
+      <v-btn color="primary" variant="flat" @click="showModal = true">
         <v-icon class="mr-1">mdi-plus</v-icon> Create Announcement
       </v-btn>
     </div>
@@ -152,24 +155,24 @@ const deleteAnnouncement = async (id: number) => {
       />
     </div>
 
-    <v-card v-else border class="pa-8 text-center text-secondary" elevation="0">
+    <v-card v-else border class="pa-8 text-center text-secondary" elevation="0" rounded="lg">
       <v-icon size="48" class="mb-2" color="secondary">mdi-bullhorn-outline</v-icon>
       <p class="text-body-1 mb-0">No active announcements broadcasted.</p>
     </v-card>
 
     <!-- Create Dialog -->
-    <v-dialog v-model="showModal" max-width="650">
+    <v-dialog v-model="showModal" max-width="650" persistent>
       <v-card rounded="lg">
         <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
           <span class="text-h6 font-weight-bold">Create QMS Broadcast</span>
-          <v-btn icon variant="text" color="white" size="small" @click="showModal = false">
+          <v-btn icon variant="text" color="white" size="small" aria-label="Close Modal" @click="showModal = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
 
         <v-card-text class="pa-4" v-if="!formLoader">
-          <v-text-field v-model="form.title" label="Directive Title" variant="outlined" density="compact" class="mb-3" />
-          <v-textarea v-model="form.content" label="Announcement Details" variant="outlined" density="compact" rows="4" class="mb-3" />
+          <v-text-field v-model="form.title" label="Directive Title*" variant="outlined" density="compact" class="mb-3" />
+          <v-textarea v-model="form.content" label="Announcement Details*" variant="outlined" density="compact" rows="4" class="mb-3" />
           <v-select
             v-model="form.department"
             :items="departments"
@@ -198,7 +201,7 @@ const deleteAnnouncement = async (id: number) => {
         <v-card-actions class="pa-4 pt-0">
           <v-spacer />
           <v-btn variant="text" @click="showModal = false">Cancel</v-btn>
-          <v-btn color="primary" variant="flat" @click="submitForm">Publish</v-btn>
+          <v-btn color="primary" variant="flat" @click="submitForm">Publish Directive</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

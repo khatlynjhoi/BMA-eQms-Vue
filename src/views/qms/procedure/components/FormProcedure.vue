@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import FormModalView from '../widgets/FormModalView.vue';
 import { GeneralController } from '@/stores/GeneralController';
 import alertService from '@/services/alertService';
@@ -9,7 +9,9 @@ const props = defineProps<{
   formList?: any[];
 }>();
 
-const emit = defineEmits(['update:formList']);
+const emit = defineEmits<{
+  (e: 'update:formList', value: any[]): void;
+}>();
 
 const formTab = ref(props.formList && props.formList.length > 0 ? 'one' : 'two');
 const openModel = ref(false);
@@ -89,7 +91,6 @@ const submitForm = async () => {
       payload.append('formFile', file);
     }
 
-    const controller = new GeneralController();
     const response: any = await GeneralController.storeItemFiles('forms/store-forms', payload);
 
     alertService.toast('Form attached successfully.');
@@ -113,7 +114,6 @@ const submitForm = async () => {
 
 const updateForm = async (updatedData: FormData) => {
   try {
-    const controller = new GeneralController();
     const response: any = await GeneralController.storeItemFiles('forms/update', updatedData);
     emit('update:formList', response.formList || []);
     openModel.value = false;
@@ -127,14 +127,14 @@ const updateForm = async (updatedData: FormData) => {
 <template>
   <div>
     <v-tabs v-model="formTab" color="primary" class="mb-4">
-      <v-tab value="one" class="font-weight-medium">LIST OF FORMS</v-tab>
-      <v-tab value="two" class="font-weight-medium">ADD FORM</v-tab>
+      <v-tab value="one" class="font-weight-medium">LIST OF LINKED FORMS</v-tab>
+      <v-tab value="two" class="font-weight-medium">REGISTER NEW FORM</v-tab>
     </v-tabs>
 
     <v-window v-model="formTab">
       <!-- Form List View -->
       <v-window-item value="one">
-        <v-list v-if="formList && formList.length > 0" border rounded class="py-0">
+        <v-list v-if="formList && formList.length > 0" border rounded="lg" class="py-0">
           <v-list-item
             v-for="(item, index) in formList"
             :key="index"
@@ -146,7 +146,7 @@ const updateForm = async (updatedData: FormData) => {
             <span class="text-body-1">{{ item.form_name }}</span>
           </v-list-item>
         </v-list>
-        <v-card v-else border elevation="0" class="pa-6 text-center text-secondary">
+        <v-card v-else border elevation="0" rounded="lg" class="pa-6 text-center text-secondary">
           <v-icon size="40" class="mb-2">mdi-file-document-outline</v-icon>
           <p class="text-body-1 mb-0">No operational forms linked to this procedure.</p>
         </v-card>
@@ -168,13 +168,13 @@ const updateForm = async (updatedData: FormData) => {
 
         <div v-if="formLoader" class="d-flex flex-column justify-center align-center pa-8">
           <v-progress-circular indeterminate color="primary" size="40" />
-          <p class="text-subtitle-2 text-primary font-weight-bold mt-2">Saving Form Data...</p>
+          <p class="text-subtitle-2 text-primary font-weight-bold mt-2">Saving Form Record...</p>
         </div>
 
         <v-form v-else @submit.prevent="submitForm">
           <v-row dense>
             <v-col cols="12" md="6">
-              <v-text-field v-model="formData.formCode" label="Form Code*" placeholder="e.g. ADM-001" variant="outlined" density="compact" class="mb-3" />
+              <v-text-field v-model="formData.formCode" label="Form Code*" placeholder="e.g. BMA-ADM-F-001" variant="outlined" density="compact" class="mb-3" />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field v-model="formData.formName" label="Form Name*" placeholder="Enter form title" variant="outlined" density="compact" class="mb-3" />
@@ -184,8 +184,8 @@ const updateForm = async (updatedData: FormData) => {
                 v-model="formData.formStatus"
                 label="Scope / Classification*"
                 :items="[
-                  { title: 'General Forms', value: '1' },
-                  { title: 'Departmental Forms', value: '0' }
+                  { title: 'General Institutional Forms', value: '1' },
+                  { title: 'Departmental Specific Forms', value: '0' }
                 ]"
                 variant="outlined"
                 density="compact"
@@ -203,10 +203,10 @@ const updateForm = async (updatedData: FormData) => {
               />
             </v-col>
             <v-col cols="12">
-              <v-file-input v-model="formData.formFile" label="Attach Template PDF File" accept=".pdf" variant="outlined" density="compact" prepend-icon="mdi-file-pdf-box" class="mb-4" />
+              <v-file-input v-model="formData.formFile" label="Attach Form PDF Template" accept=".pdf" variant="outlined" density="compact" prepend-icon="mdi-file-pdf-box" class="mb-4" />
             </v-col>
             <v-col cols="12" class="text-right">
-              <v-btn type="submit" color="primary" variant="flat">Submit Form</v-btn>
+              <v-btn type="submit" color="primary" variant="flat">Register Form</v-btn>
             </v-col>
           </v-row>
         </v-form>

@@ -1,8 +1,9 @@
 .v-footer {
-  background: rgb(var(--v-theme-containerbg));
-  padding: 24px 16px 0px;
+  background: rgb(var(--v-theme-containerBg));
+  padding: 24px 16px 0;
   margin-top: auto;
   position: unset;
+
   a {
     text-decoration: unset;
     &:hover {

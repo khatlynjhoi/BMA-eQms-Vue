@@ -29,38 +29,33 @@ const props = defineProps({
   }
 });
 
-// use `toRef` to create reactive references to `name` prop which is passed to `useField`
-// this is important because vee-validte needs to know if the field name changes
-// https://vee-validate.logaretm.com/v4/guide/composition-api/caveats
-const name = toRef(props, 'name');
+const nameRef = toRef(props, 'name');
 
-// we don't provide any rules here because we are using form-level validation
-// https://vee-validate.logaretm.com/v4/guide/validation#form-level-validation
 const {
   value: inputValue,
   errorMessage,
   handleBlur,
   handleChange,
   meta
-} = useField(name, undefined, {
+} = useField(nameRef, undefined, {
   initialValue: props.value
 });
 </script>
+
 <template>
   <div class="TextInput" :class="{ 'has-error': !!errorMessage, success: meta.valid }">
     <v-text-field
+      v-model="inputValue"
       :name="name"
       :id="name"
       :type="type"
-      :v-model="inputValue"
       variant="outlined"
-      single-line
-      :valid="meta.valid"
-      class="mb-3"
       density="comfortable"
-      :placeholder="label"
-      :color="meta.valid ? 'success' : ''"
+      :placeholder="placeholder || label"
+      :color="meta.valid ? 'success' : 'primary'"
       :error-messages="errorMessage"
+      class="mb-3"
+      hide-details="auto"
       @input="handleChange"
       @blur="handleBlur"
     />

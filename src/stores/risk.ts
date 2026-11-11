@@ -18,13 +18,13 @@ export const useRiskStore = defineStore('risk', {
   }),
 
   getters: {
-    pendingRisks: (state) => state.riskAssessments.filter((r) => r.status === 'Draft'),
-    approvedRisks: (state) => state.riskAssessments.filter((r) => r.status === 'Approved'),
-    achievedOpportunities: (state) => state.opportunities.filter((o) => o.status === 'Achieved')
+    pendingRisks: (state): RiskAssessment[] => state.riskAssessments.filter((r) => r.status === 'Draft'),
+    approvedRisks: (state): RiskAssessment[] => state.riskAssessments.filter((r) => r.status === 'Approved'),
+    achievedOpportunities: (state): OpportunityItem[] => state.opportunities.filter((o) => o.status === 'Achieved')
   },
 
   actions: {
-    async fetchRiskAssessments() {
+    async fetchRiskAssessments(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();
@@ -37,7 +37,7 @@ export const useRiskStore = defineStore('risk', {
       }
     },
 
-    async fetchOpportunities() {
+    async fetchOpportunities(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();
@@ -50,7 +50,7 @@ export const useRiskStore = defineStore('risk', {
       }
     },
 
-    async fetchQualityObjectives() {
+    async fetchQualityObjectives(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();

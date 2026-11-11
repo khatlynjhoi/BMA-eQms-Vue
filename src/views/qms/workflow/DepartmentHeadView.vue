@@ -18,15 +18,15 @@ const userRole = ref<number | null>(null);
 
 const headers = [
   { title: 'Status', key: 'status', align: 'start' as const },
-  { title: 'Amendment Control', key: 'amendmentControl', align: 'start' as const },
+  { title: 'Amendment Control No.', key: 'amendmentControl', align: 'start' as const },
   { title: 'Procedure / Form Name', key: 'name', align: 'start' as const },
-  { title: 'Category', key: 'reference', align: 'start' as const },
+  { title: 'Classification', key: 'reference', align: 'start' as const },
   { title: 'Submission Date', key: 'submittedData', align: 'start' as const }
 ];
 
 const draftHeader = [
   { title: 'Procedure / Form Name', key: 'name', align: 'start' as const },
-  { title: 'Category', key: 'reference', align: 'start' as const },
+  { title: 'Classification', key: 'reference', align: 'start' as const },
   { title: 'Description of Changes', key: 'descriptionOfChanges', align: 'start' as const },
   { title: 'Date Created', key: 'createdAt', align: 'start' as const },
   { title: 'Actions', key: 'draftAction', align: 'center' as const, sortable: false }
@@ -63,7 +63,7 @@ onMounted(async () => {
 });
 
 const draftSubmit = async (id: number | string) => {
-  const confirmed = await alertService.confirm('Do you want to submit this document amendment for review?');
+  const confirmed = await alertService.confirm('Submit this document amendment for QMR verification?');
   if (!confirmed.isConfirmed) return;
 
   formLoader.value = true;
@@ -81,14 +81,14 @@ const draftSubmit = async (id: number | string) => {
 };
 
 const draftRemove = async (id: number | string) => {
-  const confirmed = await alertService.confirm('Are you sure you want to discard this draft?');
+  const confirmed = await alertService.confirm('Are you sure you want to discard this amendment draft?');
   if (confirmed.isConfirmed) {
-    alertService.toast('Draft removed.');
+    alertService.toast('Amendment draft removed.');
   }
 };
 
 const draftView = (item: any) => {
-  console.log('Viewing draft:', item);
+  console.log('Viewing draft details:', item);
 };
 </script>
 
@@ -96,7 +96,7 @@ const draftView = (item: any) => {
   <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
     <v-card-item>
       <div class="d-flex justify-space-between align-center">
-        <v-card-title class="text-h5 font-weight-bold">DOCUMENT AMENDMENTS WORKFLOW</v-card-title>
+        <v-card-title class="text-h5 font-weight-bold">MANAGEMENT OF CHANGE WORKFLOW (CLAUSE 6.3)</v-card-title>
         <v-btn color="primary" to="/qms/approval-workflow/create" variant="flat">
           <v-icon class="mr-1">mdi-plus</v-icon> Create Amendment
         </v-btn>
@@ -106,7 +106,7 @@ const draftView = (item: any) => {
 
     <v-card-text class="pa-0">
       <v-tabs v-model="tab" color="primary" class="px-4 border-b">
-        <v-tab value="one">DRAFTS</v-tab>
+        <v-tab value="one">DRAFT AMENDMENTS</v-tab>
         <v-tab value="two">SUBMISSIONS</v-tab>
         <v-tab v-if="userRole === 6" value="three">PENDING VERIFICATION (QMR)</v-tab>
       </v-tabs>

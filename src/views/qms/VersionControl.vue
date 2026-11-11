@@ -13,14 +13,14 @@ const formHeader = [
   { title: 'Form Name', key: 'formName', sortable: true },
   { title: 'Updated By', key: 'updatedBy', sortable: true },
   { title: 'Timestamp', key: 'updatedAt', sortable: true },
-  { title: 'Description of Change', key: 'description' }
+  { title: 'Description of Change (Clause 6.3)', key: 'description' }
 ];
 
 const procedureHeader = [
   { title: 'Procedure Title', key: 'formName', sortable: true },
   { title: 'Updated By', key: 'updatedBy', sortable: true },
   { title: 'Timestamp', key: 'updatedAt', sortable: true },
-  { title: 'Description of Change', key: 'description' }
+  { title: 'Description of Change (Clause 6.3)', key: 'description' }
 ];
 
 onMounted(async () => {
@@ -40,7 +40,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <CardHeader title="SYSTEM VERSION CONTROLS" class="overflow-hidden">
+  <CardHeader title="SYSTEM VERSION CONTROLS (CLAUSE 7.5.3)" class="overflow-hidden">
     <div class="pa-2">
       <div v-if="contentLoading" class="d-flex justify-center align-center pa-10">
         <v-progress-circular indeterminate color="primary" size="48" />

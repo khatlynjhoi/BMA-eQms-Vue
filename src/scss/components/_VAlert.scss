@@ -7,6 +7,7 @@
 
 .v-alert__prepend {
   align-self: center;
+
   .mdi {
     width: 18px !important;
     height: 18px !important;
@@ -18,12 +19,15 @@
   .single-line-alert {
     display: flex;
     flex-wrap: wrap;
+
     .v-alert__append {
-      margin-inline-start: 0px;
+      margin-inline-start: 0;
     }
+
     .v-alert__close {
       margin-left: auto;
     }
+
     .v-alert__content {
       width: 100%;
       margin-top: 5px;

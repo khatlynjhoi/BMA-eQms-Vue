@@ -19,11 +19,11 @@ defineEmits<{
     <label class="text-caption font-weight-bold text-secondary mb-1 d-block">{{ field.label }}</label>
     <v-radio-group
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
       :error="error"
       :error-messages="errorMessages"
       density="comfortable"
       hide-details="auto"
+      @update:model-value="$emit('update:modelValue', $event)"
     >
       <v-radio
         v-for="(option, index) in field.options"

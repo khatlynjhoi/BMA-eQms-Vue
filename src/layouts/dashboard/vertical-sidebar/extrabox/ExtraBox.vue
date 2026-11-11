@@ -9,23 +9,23 @@ import SvgSprite from '@/components/shared/SvgSprite.vue';
         <SvgSprite name="custom-shield-outline" style="width: 24px; height: 24px" />
       </v-avatar>
       <div class="px-2">
-        <h5 class="text-h6 mb-1 font-weight-bold text-primary">ISO 9001:2026 Standard</h5>
-        <small class="text-caption text-lightText">Baliwag Maritime Academy Quality Management System</small>
+        <h5 class="text-subtitle-2 mb-1 font-weight-bold text-primary">ISO 9001:2026 Standard</h5>
+        <small class="text-caption text-secondary">Baliwag Maritime Academy Quality Policy</small>
       </div>
     </div>
     <div class="mt-4">
       <v-btn
-        to="/context/policy-culture"
+        to="/context/quality-policy"
         variant="flat"
         color="primary"
         size="small"
         block
         class="rounded-md"
       >
-        <template v-slot:prepend>
+        <template #prepend>
           <SvgSprite name="custom-document-text-outline" style="width: 16px; height: 16px" />
         </template>
-        Quality Policy
+        Quality Policy & Ethics
       </v-btn>
     </div>
   </v-sheet>

@@ -1,22 +1,24 @@
-// Outline Card
+// Outline Card & Elevation Overrides
 .v-card--variant-outlined {
   border-color: rgba(var(--v-theme-borderLight), 1);
+
   .v-divider {
     border-color: rgba(var(--v-theme-borderLight), 0.8);
   }
 }
 
 .v-card-text {
-  padding: $card-text-spacer;
+  padding: 16px 24px;
 }
 
 .v-card-actions {
-  padding: 14px $card-text-spacer 14px;
+  padding: 14px 24px;
 }
 
 .v-card {
   width: 100%;
   overflow: visible;
+
   .v-card-title {
     &.text-h6 {
       font-weight: 600;
@@ -26,13 +28,15 @@
 }
 
 .v-card-item {
-  padding: $card-item-spacer-xy;
+  padding: 16px 24px;
 }
 
 .card-hover-border {
   border: 1px solid rgb(var(--v-theme-borderLight));
+  transition: border-color 0.2s ease-in-out;
+
   &:hover {
-    border: 1px solid rgb(var(--v-theme-primary));
+    border-color: rgb(var(--v-theme-primary));
   }
 }
 

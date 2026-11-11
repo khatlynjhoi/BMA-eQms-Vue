@@ -1,8 +1,4 @@
-// builder.config.(js|ts)
-
-import { defineConfig } from '@vueform/builder'
-
-// You might place this anywhere else in your project
+import { defineConfig } from '@vueform/builder';
 import '@vueform/builder/vueform.css';
 
-export default defineConfig({})
+export default defineConfig({});

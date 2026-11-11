@@ -3,7 +3,7 @@ html {
   .bg-info,
   .bg-darkinfo,
   .bg-warning {
-    color: white !important;
+    color: #ffffff !important;
   }
 }
 
@@ -14,7 +14,7 @@ html {
 }
 
 .v-row + .v-row {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .v-divider {
@@ -28,6 +28,7 @@ html {
 
 .link-hover {
   text-decoration: unset;
+
   &:hover {
     text-decoration: underline;
   }
@@ -70,7 +71,7 @@ header {
   background-color: transparent;
 }
 
-// table css
+// Table Hover State Overrides
 .v-table {
   &.v-table--hover {
     > .v-table__wrapper {
@@ -89,16 +90,19 @@ header {
   }
 }
 
-// accordion page css
+// Accordion Panel & Expansion Overrides
 .v-expansion-panel {
   border: 1px solid rgb(var(--v-theme-borderLight));
+
   &:not(:first-child) {
     margin-top: -1px;
   }
+
   .v-expansion-panel-text__wrapper {
     border-top: 1px solid rgb(var(--v-theme-borderLight));
     padding: 16px 24px;
   }
+
   &.v-expansion-panel--active {
     .v-expansion-panel-title--active {
       .v-expansion-panel-title__overlay {
@@ -107,11 +111,13 @@ header {
     }
   }
 }
+
 .v-expansion-panel--active {
   > .v-expansion-panel-title {
     min-height: unset;
   }
 }
+
 .v-expansion-panel--disabled .v-expansion-panel-title {
   color: rgba(var(--v-theme-on-surface), 0.15);
 }

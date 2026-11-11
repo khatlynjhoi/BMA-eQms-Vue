@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
   </div>
   <div v-else-if="loading" class="d-flex flex-column justify-center align-center pa-10">
     <v-progress-circular indeterminate color="primary" size="48" />
-    <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Loading PDF Document...</p>
+    <p class="text-subtitle-1 text-primary font-weight-bold mt-3">Loading Documented Information...</p>
   </div>
   <div v-else-if="pdfFile" class="pdf-container">
     <iframe :src="`${pdfFile}#toolbar=0&navpanes=0`" class="full-screen-iframe" frameborder="0" @contextmenu.prevent />

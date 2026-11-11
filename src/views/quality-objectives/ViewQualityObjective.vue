@@ -57,8 +57,8 @@ const storeObjective = async (formDataPayload: any) => {
     formDataPayload.objective = objective.value.id;
     const jsonStr = JSON.stringify(formDataPayload);
     const response: any = await GeneralController.storeJson('quality-objective/add-objectives', jsonStr);
-    
-    if (response.status === 200) {
+
+    if (response && (response.status === 200 || response.ok)) {
       alertService.toast('Quality Objective saved successfully.');
       addQualityModal.value.show = false;
       await retrieveData();

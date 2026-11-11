@@ -1,17 +1,39 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import TextField from '../fields/TextField.vue';
-import SelectField from '../fields/SelectField.vue';
-import RadioField from '../fields/RadioField.vue';
-import CheckboxField from '../fields/CheckboxField.vue';
-import TableField from '../fields/TableField.vue';
-import { GeneralController } from '@/stores/GeneralController';
+import TextField from './fields/TextField.vue';
+import SelectField from './fields/SelectField.vue';
+import RadioField from './fields/RadioField.vue';
+import CheckboxField from './fields/CheckboxField.vue';
+import TableField from './fields/TableField.vue';
 import alertService from '@/services/alertService';
+
+export interface PageProperties {
+  pageSize: 'a4' | 'letter' | 'legal';
+  orientation: 'portrait' | 'landscape';
+  pageModifiers: string;
+}
+
+export interface FormSchemaField {
+  id: string;
+  inputType: string;
+  type: string;
+  label: string;
+  model: string;
+  required?: boolean;
+  options?: string[] | null;
+  columns?: Array<{ id: string; label: string; type: string; model: string }>;
+}
 
 const props = withDefaults(
   defineProps<{
     formList: any[];
-    form?: any;
+    form?: {
+      form_id?: number | string | null;
+      form_name?: string;
+      form_code?: string;
+      form_schema: FormSchemaField[];
+      pageProperties: PageProperties;
+    };
   }>(),
   {
     form: () => ({
@@ -24,10 +46,12 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits(['save']);
+const emit = defineEmits<{
+  (e: 'save', formPayload: any): void;
+}>();
 
 const activeIndex = ref<number | null>(null);
-const activeField = ref<any>(null);
+const activeField = ref<FormSchemaField | null>(null);
 const selectedForm = ref<any>(null);
 
 const basicTypes = [
@@ -49,12 +73,14 @@ const advanced = [
 
 const pageProperties = computed({
   get: () => props.form.pageProperties || { pageSize: 'a4', orientation: 'portrait', pageModifiers: 'whole' },
-  set: (val) => { props.form.pageProperties = val; }
+  set: (val) => {
+    if (props.form) {
+      props.form.pageProperties = val;
+    }
+  }
 });
 
-const openModel = ref(false);
 const uploadModal = ref(false);
-const formInfo = ref({ isModalLoading: true, content: [] as any[], link: null as string | null });
 const fileName = ref('');
 
 const resolveComponent = (type: string) => {
@@ -75,26 +101,28 @@ const activeFieldFunction = (index: number | string) => {
 };
 
 const onFormChange = (item: any) => {
-  if (!item) return;
-  props.form.form_name = item.title || item.raw?.form_name;
-  props.form.form_id = item.value || item.raw?.id;
-  props.form.form_code = item.raw?.form_code;
+  if (!item || !props.form) return;
+  props.form.form_name = item.title || item.raw?.form_name || item.form_name;
+  props.form.form_id = item.value || item.raw?.id || item.id;
+  props.form.form_code = item.raw?.form_code || item.form_code;
 };
 
 const addField = (item: any) => {
+  if (!props.form) return;
   const hasOptions = ['checkbox', 'radio', 'select'].includes(item.type);
-  const newField: any = {
-    id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+  const randomKey = Math.random().toString(36).substring(2, 7);
+  const newField: FormSchemaField = {
+    id: `field_${Date.now()}_${randomKey}`,
     inputType: item.inputType,
     type: item.type,
     label: `${item.label} ${props.form.form_schema.length + 1}`,
-    model: `field_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    model: `field_${Date.now()}_${randomKey}`,
     options: hasOptions ? ['Option 1', 'Option 2'] : null
   };
 
   if (item.type === 'table') {
     newField.columns = [
-      { id: `col_${Math.random().toString(36).substr(2, 5)}`, label: 'New Column', type: 'text', model: `col_1` }
+      { id: `col_${Math.random().toString(36).substring(2, 7)}`, label: 'New Column', type: 'text', model: `col_1` }
     ];
   }
 
@@ -104,7 +132,8 @@ const addField = (item: any) => {
 };
 
 const removeField = (id: string | number) => {
-  const idx = props.form.form_schema.findIndex((f: any) => f.id === id);
+  if (!props.form) return;
+  const idx = props.form.form_schema.findIndex((f) => f.id === id);
   if (idx !== -1) {
     props.form.form_schema.splice(idx, 1);
     activeField.value = null;
@@ -113,12 +142,14 @@ const removeField = (id: string | number) => {
 };
 
 const saveForm = () => {
+  if (!props.form) return;
   props.form.pageProperties = pageProperties.value;
   emit('save', props.form);
-  alertService.toast('Form schema saved successfully.');
+  alertService.toast('Form schema saved successfully (Clause 7.5.3).');
 };
 
 const resetForm = () => {
+  if (!props.form) return;
   props.form.form_schema = [];
   activeField.value = null;
   activeIndex.value = null;
@@ -126,21 +157,24 @@ const resetForm = () => {
 
 const handleFileUpload = (value: any) => {
   const file = Array.isArray(value) ? value[0] : value;
-  if (!file) return;
+  if (!file || !props.form) return;
 
   fileName.value = file.name;
   const reader = new FileReader();
-  reader.onload = (e: any) => {
+  reader.onload = (e: ProgressEvent<FileReader>) => {
     try {
-      const jsonData = JSON.parse(e.target.result);
-      props.form.form_schema = typeof jsonData.form_schema === 'string' ? JSON.parse(jsonData.form_schema) : jsonData.form_schema;
+      const resultStr = e.target?.result as string;
+      const jsonData = JSON.parse(resultStr);
+      props.form.form_schema = typeof jsonData.form_schema === 'string'
+        ? JSON.parse(jsonData.form_schema)
+        : jsonData.form_schema;
       props.form.form_id = jsonData.form_id;
       props.form.form_code = jsonData.form_code;
       props.form.form_name = jsonData.form_name;
       uploadModal.value = false;
-      alertService.toast('Schema imported.');
+      alertService.toast('QMS Form Schema imported successfully.');
     } catch (err) {
-      alertService.error('Invalid QMS form schema JSON.');
+      alertService.error('Invalid QMS form schema JSON file.');
     }
   };
   reader.readAsText(file);
@@ -201,7 +235,7 @@ const handleFileUpload = (value: any) => {
 
     <!-- Canvas Builder Area -->
     <v-col cols="12" md="7" class="pa-4">
-      <v-card border elevation="0" class="pa-4 mb-4">
+      <v-card border elevation="0" class="pa-4 mb-4" rounded="lg">
         <v-row align="center">
           <v-col cols="12" md="8">
             <v-autocomplete
@@ -209,28 +243,42 @@ const handleFileUpload = (value: any) => {
               :items="formList"
               item-title="form_name"
               item-value="id"
-              label="Select Target QMS Form"
+              label="Select Target QMS Form (Clause 7.5.3)"
               variant="outlined"
               density="compact"
               hide-details
               return-object
-              @update:modelValue="onFormChange"
+              @update:model-value="onFormChange"
             />
           </v-col>
           <v-col cols="12" md="4" class="text-right">
             <v-btn color="info" size="small" variant="tonal" @click="uploadModal = true">
-              Import JSON
+              Import JSON Schema
             </v-btn>
           </v-col>
         </v-row>
       </v-card>
 
-      <v-card border elevation="0" class="pa-4">
+      <v-card border elevation="0" class="pa-4" rounded="lg">
         <h4 class="text-h6 font-weight-bold mb-3">{{ form?.form_name || 'Untitled Form Schema' }}</h4>
-        
-        <div class="d-flex gap-2 mb-4">
-          <v-select v-model="pageProperties.pageSize" :items="['a4', 'letter', 'legal']" label="Page Size" variant="outlined" density="compact" hide-details />
-          <v-select v-model="pageProperties.orientation" :items="['portrait', 'landscape']" label="Orientation" variant="outlined" density="compact" hide-details />
+
+        <div class="d-flex ga-2 mb-4">
+          <v-select
+            v-model="pageProperties.pageSize"
+            :items="['a4', 'letter', 'legal']"
+            label="Page Size"
+            variant="outlined"
+            density="compact"
+            hide-details
+          />
+          <v-select
+            v-model="pageProperties.orientation"
+            :items="['portrait', 'landscape']"
+            label="Orientation"
+            variant="outlined"
+            density="compact"
+            hide-details
+          />
         </div>
 
         <div v-if="!form?.form_schema?.length" class="text-center py-10 border rounded border-dashed">
@@ -249,7 +297,7 @@ const handleFileUpload = (value: any) => {
             <component :is="resolveComponent(field.inputType)" v-model="field.model" :field="field" />
           </div>
 
-          <div class="d-flex gap-2 mt-4">
+          <div class="d-flex ga-2 mt-4">
             <v-btn color="primary" variant="flat" @click="saveForm">Save Form Schema</v-btn>
             <v-btn color="error" variant="outlined" @click="resetForm">Clear Canvas</v-btn>
           </div>
@@ -262,9 +310,28 @@ const handleFileUpload = (value: any) => {
       <h3 class="text-subtitle-1 font-weight-bold mb-3">Field Properties</h3>
 
       <div v-if="activeField">
-        <v-text-field v-model="activeField.label" label="Field Label" variant="outlined" density="compact" class="mb-3" />
-        <v-text-field v-model="activeField.model" label="Field Key / Model" variant="outlined" density="compact" class="mb-3" />
-        <v-switch v-model="activeField.required" label="Required Field" color="primary" density="compact" hide-details class="mb-4" />
+        <v-text-field
+          v-model="activeField.label"
+          label="Field Label"
+          variant="outlined"
+          density="compact"
+          class="mb-3"
+        />
+        <v-text-field
+          v-model="activeField.model"
+          label="Field Key / Model"
+          variant="outlined"
+          density="compact"
+          class="mb-3"
+        />
+        <v-switch
+          v-model="activeField.required"
+          label="Required Field"
+          color="primary"
+          density="compact"
+          hide-details
+          class="mb-4"
+        />
 
         <v-btn color="error" block variant="outlined" size="small" @click="removeField(activeField.id)">
           Delete Field
@@ -282,7 +349,13 @@ const handleFileUpload = (value: any) => {
   <v-dialog v-model="uploadModal" max-width="400">
     <v-card rounded="lg" class="pa-4">
       <v-card-title class="px-0 pt-0 text-h6 font-weight-bold">Import Form Schema</v-card-title>
-      <v-file-input label="Upload JSON File" accept=".json" variant="outlined" density="compact" @update:modelValue="handleFileUpload" />
+      <v-file-input
+        label="Upload JSON File"
+        accept=".json"
+        variant="outlined"
+        density="compact"
+        @update:model-value="handleFileUpload"
+      />
     </v-card>
   </v-dialog>
 </template>

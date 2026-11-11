@@ -18,12 +18,12 @@ export const useQmsStore = defineStore('qms', {
   }),
 
   getters: {
-    draftAmendments: (state) => state.amendments.filter((a) => a.status === 'Draft'),
-    submittedAmendments: (state) => state.amendments.filter((a) => a.status === 'Pending Review')
+    draftAmendments: (state): AmendmentRequest[] => state.amendments.filter((a) => a.status === 'Draft'),
+    submittedAmendments: (state): AmendmentRequest[] => state.amendments.filter((a) => a.status === 'Pending Review')
   },
 
   actions: {
-    async fetchCategories() {
+    async fetchCategories(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();
@@ -36,7 +36,7 @@ export const useQmsStore = defineStore('qms', {
       }
     },
 
-    async fetchAmendments() {
+    async fetchAmendments(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();

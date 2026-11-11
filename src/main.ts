@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
-import { createPinia } from 'pinia'; // Keep this import at the top
+import { createPinia } from 'pinia';
 import App from './App.vue';
-import { router } from './router';
+import router from '@/router';
 import vuetify from './plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.css';
 
@@ -11,10 +11,10 @@ import VueApexCharts from 'vue3-apexcharts';
 
 import SvgSprite from '@/components/shared/SvgSprite.vue';
 
-// google-fonts
+// Google Fonts Typography Scale
+import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/700.css';
 
 import '@fontsource/inter/400.css';
@@ -31,18 +31,17 @@ import '@fontsource/public-sans/400.css';
 import '@fontsource/public-sans/500.css';
 import '@fontsource/public-sans/600.css';
 import '@fontsource/public-sans/700.css';
-import { fakeBackend } from '@/utils/helpers/fake-backend';
+
 const app = createApp(App);
 
-// Initialize fake backend if necessary, assuming it doesn't depend on Pinia immediately
-fakeBackend();
-
-// ✨ CRITICAL CHANGE: Initialize Pinia BEFORE using the router or any components that depend on stores.
+// Initialize Pinia state store BEFORE router & component mounting
 app.use(createPinia());
 
-// Now, other plugins and the router can be used, as Pinia is ready.
+// Mount plugins, router, and Vuetify design system
 app.use(router);
+app.use(vuetify);
 app.use(PerfectScrollbarPlugin);
-app.component('SvgSprite', SvgSprite);
 app.use(VueApexCharts);
-app.use(vuetify).mount('#app');
+app.component('SvgSprite', SvgSprite);
+
+app.mount('#app');

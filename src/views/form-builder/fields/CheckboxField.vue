@@ -27,9 +27,9 @@ const internalValue = computed({
     <v-checkbox
       v-for="opt in field.options"
       :key="opt"
+      v-model="internalValue"
       :label="opt"
       :value="opt"
-      v-model="internalValue"
       :error="error"
       density="compact"
       color="primary"

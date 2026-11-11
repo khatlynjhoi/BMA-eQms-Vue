@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 import RiskTableList from './components/RiskTableList.vue';
 import RiskReportModal from './components/RiskReportModal.vue';
 import RiskAssessmentValidation from './components/RiskAssessmentValidation.vue';
@@ -7,6 +8,7 @@ import { GeneralController } from '@/stores/GeneralController';
 import { useAuthStore } from '@/stores/auth';
 import alertService from '@/services/alertService';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 const tab = ref('one');
@@ -25,6 +27,13 @@ const riskAssessmentValidation = ref({
 });
 
 const userRole = computed(() => Number(authStore.user?.roleID || 6));
+
+const revokeBlobUrl = (obj: any) => {
+  if (obj?.link && obj.link.startsWith('blob:')) {
+    URL.revokeObjectURL(obj.link);
+    obj.link = null;
+  }
+};
 
 const headers = (role: number) => {
   const qmrHeader = [
@@ -72,7 +81,13 @@ onMounted(() => {
   retrieveDataList();
 });
 
+onBeforeUnmount(() => {
+  revokeBlobUrl(riskAssessments.value);
+  revokeBlobUrl(riskAssessmentValidation.value.content);
+});
+
 const onView = async (item: any) => {
+  revokeBlobUrl(riskAssessments.value);
   formLoader.value = true;
   openModel.value = true;
   try {
@@ -96,6 +111,7 @@ const onView = async (item: any) => {
 };
 
 const onValidate = async (item: any) => {
+  revokeBlobUrl(riskAssessmentValidation.value.content);
   formLoader.value = true;
   riskAssessmentValidation.value.modalShow = true;
   try {
@@ -120,7 +136,8 @@ const onValidate = async (item: any) => {
 };
 
 const onEdit = (item: any) => {
-  window.location.href = `/risk/risk-management/view/${item.riskId || item.id}`;
+  const targetId = item.riskId || item.id;
+  router.push(`/risk-management/view/${targetId}`);
 };
 
 const onSubmit = async (data: any) => {
@@ -193,7 +210,7 @@ const onDisapproved = async (data: FormData) => {
     <v-card-item>
       <div class="d-flex justify-space-between align-center">
         <v-card-title class="text-h5 font-weight-bold">RISK MANAGEMENT WORKSPACE (CLAUSE 6.1)</v-card-title>
-        <v-btn color="primary" to="/risk/risk-management/create-new" variant="flat">
+        <v-btn color="primary" to="/risk-management/create-new" variant="flat">
           <v-icon class="mr-1">mdi-plus</v-icon> Register Risk Assessment
         </v-btn>
       </div>

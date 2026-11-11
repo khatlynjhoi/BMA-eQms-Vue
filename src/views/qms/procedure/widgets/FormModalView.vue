@@ -11,10 +11,12 @@ const props = defineProps<{
   formData?: any;
 }>();
 
-const emit = defineEmits(['update:modelValue', 'update']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'update', payload: FormData): void;
+}>();
 
 const formModalTab = ref('one');
-const formLoader = ref(false);
 
 const closeModal = () => {
   emit('update:modelValue', false);
@@ -36,7 +38,7 @@ const handleUpdate = () => {
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
         <span class="text-h6 font-weight-bold">Form Specification & Preview</span>
-        <v-btn icon variant="text" color="white" size="small" @click="closeModal">
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Dialog" @click="closeModal">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -71,13 +73,13 @@ const handleUpdate = () => {
             <v-text-field v-model="formData.formName" label="Form Name" variant="outlined" density="compact" class="mb-3" />
             <v-select
               v-model="formData.formRetention"
-              label="Retention Period"
+              label="Retention Period (Clause 7.5.3)"
               :items="['Permanent', '1 Year', '2 Years', '3 Years', '5 Years', 'Until Superseded']"
               variant="outlined"
               density="compact"
               class="mb-4"
             />
-            <v-btn type="submit" color="primary" variant="flat">Save Changes</v-btn>
+            <v-btn type="submit" color="primary" variant="flat">Save Metadata</v-btn>
           </v-form>
         </v-window-item>
       </v-window>

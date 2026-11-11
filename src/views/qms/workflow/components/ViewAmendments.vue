@@ -13,7 +13,7 @@ const retrieveAmendment = async () => {
 
   try {
     const controller = new GeneralController();
-    const response = await controller.retrieveData('amendment/retrieve', { data: targetId }, 'data');
+    const response = await controller.retrieveData('amendment/retrieve', { data: String(targetId) }, 'data');
     amendmentData.value = response;
   } catch (error) {
     console.error('Failed to load amendment comparison files:', error);
@@ -30,7 +30,9 @@ onMounted(() => {
 <template>
   <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
     <v-card-item>
-      <v-card-title class="text-h5 font-weight-bold">Amendment Document Comparison</v-card-title>
+      <v-card-title class="text-h5 font-weight-bold">
+        DOCUMENT AMENDMENT COMPARISON (CLAUSE 6.3)
+      </v-card-title>
     </v-card-item>
     <v-divider />
 
@@ -41,8 +43,8 @@ onMounted(() => {
 
       <v-row v-else>
         <v-col cols="12" md="6">
-          <div class="pa-2 bg-grey-lighten-4 rounded mb-2 font-weight-bold text-subtitle-2">
-            CURRENT / ORIGINAL FILE
+          <div class="pa-3 bg-grey-lighten-4 rounded mb-2 font-weight-bold text-subtitle-2 border">
+            CURRENT APPROVED FILE
           </div>
           <iframe
             v-if="amendmentData?.originalFile"
@@ -55,8 +57,8 @@ onMounted(() => {
         </v-col>
 
         <v-col cols="12" md="6">
-          <div class="pa-2 bg-blue-lighten-5 text-primary rounded mb-2 font-weight-bold text-subtitle-2">
-            PROPOSED AMENDMENT REVISION
+          <div class="pa-3 bg-blue-lighten-5 text-primary rounded mb-2 font-weight-bold text-subtitle-2 border">
+            PROPOSED REVISION (MOC EVALUATION)
           </div>
           <iframe
             v-if="amendmentData?.amendmentFile"
@@ -64,7 +66,7 @@ onMounted(() => {
             style="width: 100%; height: 75vh; border: 1px solid #e0e0e0"
           />
           <v-card v-else border elevation="0" class="pa-10 text-center text-secondary">
-            No amendment file available.
+            No proposed amendment file available.
           </v-card>
         </v-col>
       </v-row>

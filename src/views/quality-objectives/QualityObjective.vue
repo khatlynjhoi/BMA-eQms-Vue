@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import QualityObjectiveList from './components/QualityObjectiveList.vue';
 import QualityObjectiveModal from './components/QualityObjectiveModal.vue';
 import { GeneralController } from '@/stores/GeneralController';
 import { useAuthStore } from '@/stores/auth';
 import alertService from '@/services/alertService';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 const contentLoading = ref(true);
@@ -86,9 +88,8 @@ const storeAcademicYear = async () => {
     formData.append('academic', academicModal.value.formInput);
     formData.append('procedure', String(academicModal.value.procedure));
 
-    const controller = new GeneralController();
-    const response: any = await GeneralController.storeItem('quality-objective/store', formData);
-    
+    await GeneralController.storeItem('quality-objective/store', formData);
+
     alertService.toast('Quality Objective record created successfully.');
     academicModal.value = { show: false, formInput: '', procedure: null };
     await retrieveData();
@@ -100,7 +101,7 @@ const storeAcademicYear = async () => {
 };
 
 const onView = (data: any) => {
-  window.location.href = `/quality-objectives/monitoring/view/${data.id}`;
+  router.push(`/quality-objectives/monitoring/view/${data.id}`);
 };
 
 const onViewPDF = async (item: any) => {
@@ -149,7 +150,9 @@ const onRemoved = async (data: any) => {
   <v-card variant="outlined" elevation="0" class="bg-surface mb-5 rounded-lg">
     <v-card-item>
       <div class="d-flex justify-space-between align-center">
-        <v-card-title class="text-h5 font-weight-bold">QUALITY OBJECTIVES MANAGEMENT (ISO 9001:2026 CLAUSE 6.2)</v-card-title>
+        <v-card-title class="text-h5 font-weight-bold">
+          QUALITY OBJECTIVES MANAGEMENT (ISO 9001:2026 CLAUSE 6.2)
+        </v-card-title>
         <v-btn color="primary" variant="flat" @click="academicModal.show = true">
           <v-icon class="mr-1">mdi-plus</v-icon> New Quality Objective
         </v-btn>

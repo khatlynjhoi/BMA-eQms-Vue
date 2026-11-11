@@ -1,12 +1,12 @@
 // ISO 9001:2026 Clause 7.5 - Process and Forms
 export interface QmsProcedureCategory {
-  id: number;
+  id: number | string;
   categoryName: string;
   procedureCount: number;
 }
 
 export interface ProcedureDocument {
-  id: string;
+  id: number | string;
   procedureName: string;
   version: string;
   category: string;
@@ -17,7 +17,7 @@ export interface ProcedureDocument {
 
 // ISO 9001:2026 Clause 6.3 - Management of Change (MOC / Amendments)
 export interface AmendmentRequest {
-  id: string;
+  id: number | string;
   procedureFormName: string;
   category: string;
   descriptionOfChanges: string;

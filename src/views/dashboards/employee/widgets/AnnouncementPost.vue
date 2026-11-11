@@ -2,30 +2,53 @@
 import { ref } from 'vue';
 import alertService from '@/services/alertService';
 
+export interface PostAttachment {
+  filename: string;
+  link: string;
+  [key: string]: any;
+}
+
+export interface AnnouncementItem {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  department_id?: number | null;
+  owner?: boolean;
+  creator?: {
+    name?: string;
+    profile?: string;
+  };
+  files?: PostAttachment[];
+}
+
 const props = withDefaults(
   defineProps<{
-    post: any;
-    departments?: any[];
+    post: AnnouncementItem;
+    departments?: Array<{ id: number | null; name: string }>;
   }>(),
   {
     departments: () => []
   }
 );
 
-const emit = defineEmits(['edit', 'delete']);
+const emit = defineEmits<{
+  (e: 'edit', payload: { id: number; title: string; content: string; department_id: number | null; files: File[] }): void;
+  (e: 'delete', id: number): void;
+}>();
 
 const showViewer = ref(false);
-const selectedFile = ref<any>(null);
+const selectedFile = ref<PostAttachment | null>(null);
 const editDialog = ref(false);
 const updatedTitle = ref('');
 const updatedContent = ref('');
 const updatedFiles = ref<File[]>([]);
 const updatedDepartment = ref<number | null>(null);
 
-const isImage = (file: any) => /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.link);
-const isPDF = (file: any) => /\.pdf$/i.test(file.link);
+const isImage = (file: PostAttachment) => /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.link);
+const isPDF = (file: PostAttachment) => /\.pdf$/i.test(file.link);
 
-const openViewer = (file: any) => {
+const openViewer = (file: PostAttachment) => {
   selectedFile.value = file;
   showViewer.value = true;
 };
@@ -63,7 +86,7 @@ const confirmDelete = async () => {
       <div class="d-flex ga-4 justify-space-between align-center">
         <div class="d-flex ga-3 align-center">
           <v-avatar size="48" rounded="md" color="grey-lighten-3">
-            <v-img :src="post.creator?.profile || '/src/assets/images/users/avatar-1.png'" cover />
+            <v-img :src="post.creator?.profile || '/src/assets/images/users/avatar-1.png'" cover alt="User Avatar" />
           </v-avatar>
           <div>
             <h5 class="text-subtitle-1 font-weight-bold mb-0">{{ post.creator?.name || 'QMS Administrator' }}</h5>
@@ -71,10 +94,10 @@ const confirmDelete = async () => {
           </div>
         </div>
         <div v-if="post.owner" class="d-flex gap-1">
-          <v-btn icon variant="text" size="small" color="primary" @click="openEdit">
+          <v-btn icon variant="text" size="small" color="primary" aria-label="Edit Post" @click="openEdit">
             <v-icon size="18">mdi-pencil-outline</v-icon>
           </v-btn>
-          <v-btn icon variant="text" size="small" color="error" @click="confirmDelete">
+          <v-btn icon variant="text" size="small" color="error" aria-label="Delete Post" @click="confirmDelete">
             <v-icon size="18">mdi-trash-can-outline</v-icon>
           </v-btn>
         </div>
@@ -88,8 +111,8 @@ const confirmDelete = async () => {
 
     <!-- Attachments Grid -->
     <v-card-text v-if="post.files && post.files.length" class="pt-2">
-      <span class="text-caption font-weight-bold text-secondary mb-2 d-block">ATTACHMENTS</span>
-      <div class="d-flex flex-wrap gap-3">
+      <span class="text-caption font-weight-bold text-secondary mb-2 d-block">ATTACHED DOCUMENTED INFORMATION</span>
+      <div class="d-flex flex-wrap ga-3">
         <div
           v-for="(file, index) in post.files"
           :key="index"
@@ -111,7 +134,7 @@ const confirmDelete = async () => {
         <v-toolbar flat density="compact" color="surface">
           <v-toolbar-title class="text-subtitle-1 font-weight-bold">Attachment Preview</v-toolbar-title>
           <v-spacer />
-          <v-btn icon variant="text" size="small" @click="showViewer = false">
+          <v-btn icon variant="text" size="small" aria-label="Close Preview" @click="showViewer = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-toolbar>
@@ -128,16 +151,16 @@ const confirmDelete = async () => {
     <!-- Edit Dialog -->
     <v-dialog v-model="editDialog" max-width="600">
       <v-card rounded="lg">
-        <v-card-title class="pa-4 bg-primary text-white">Edit Announcement</v-card-title>
+        <v-card-title class="pa-4 bg-primary text-white">Edit Announcement Directive</v-card-title>
         <v-card-text class="pa-4">
-          <v-text-field v-model="updatedTitle" label="Title" variant="outlined" density="compact" class="mb-3" />
-          <v-textarea v-model="updatedContent" label="Content" variant="outlined" density="compact" rows="4" class="mb-3" />
+          <v-text-field v-model="updatedTitle" label="Title*" variant="outlined" density="compact" class="mb-3" />
+          <v-textarea v-model="updatedContent" label="Content*" variant="outlined" density="compact" rows="4" class="mb-3" />
           <v-select
             v-model="updatedDepartment"
             :items="departments"
             item-title="name"
             item-value="id"
-            label="Department"
+            label="Target Department"
             variant="outlined"
             density="compact"
             class="mb-3"

@@ -18,12 +18,12 @@ export const useImprovementStore = defineStore('improvement', {
   }),
 
   getters: {
-    openCapas: (state) => state.capaLogs.filter((c) => c.status === 'Open'),
-    scheduledAudits: (state) => state.internalAudits.filter((a) => a.status === 'Scheduled')
+    openCapas: (state): CapaRecord[] => state.capaLogs.filter((c) => c.status === 'Open'),
+    scheduledAudits: (state): InternalAudit[] => state.internalAudits.filter((a) => a.status === 'Scheduled')
   },
 
   actions: {
-    async fetchInternalAudits() {
+    async fetchInternalAudits(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();
@@ -36,7 +36,7 @@ export const useImprovementStore = defineStore('improvement', {
       }
     },
 
-    async fetchCapaLogs() {
+    async fetchCapaLogs(): Promise<void> {
       this.loading = true;
       try {
         const controller = new GeneralController();

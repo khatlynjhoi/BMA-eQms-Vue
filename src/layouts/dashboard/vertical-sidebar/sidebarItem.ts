@@ -3,176 +3,99 @@ export interface menu {
   title?: string;
   icon?: string;
   to?: string;
-  divider?: boolean;
   chip?: string;
   chipColor?: string;
-  chipVariant?: string;
-  children?: menu[];
   disabled?: boolean;
   type?: string;
   subCaption?: string;
 }
 
 const sidebarItem: menu[] = [
-  // -------------------------------------------------------------
-  // DASHBOARD
-  // -------------------------------------------------------------
-  { header: 'Dashboard' },
+  { header: 'DASHBOARD & OVERVIEW' },
   {
-    title: 'Dashboard',
-    icon: 'custom-home-outline',
+    title: 'Executive Dashboard',
+    icon: 'layout-dashboard-icon',
     to: '/dashboard'
   },
 
-  // -------------------------------------------------------------
-  // CONTEXT & GOVERNANCE (Clause 4 & Clause 5)
-  // -------------------------------------------------------------
-  { header: 'Context & Governance' },
+  { header: 'CLAUSE 4 & 5: CONTEXT & GOVERNANCE' },
   {
-    title: 'Context & Climate',
-    icon: 'custom-globe-outline',
+    title: 'Context & Climate Assessment',
+    icon: 'world-icon',
     to: '/context/climate',
     chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
+    chipColor: 'info'
   },
   {
-    title: 'Interested Parties',
-    icon: 'custom-users-outline',
-    to: '/context/stakeholders',
+    title: 'Interested Parties Register',
+    icon: 'users-icon',
+    to: '/context/interested-parties',
     chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
+    chipColor: 'info'
   },
   {
     title: 'Quality Policy & Ethics',
-    icon: 'custom-shield-outline',
-    to: '/context/policy-culture',
+    icon: 'shield-check-icon',
+    to: '/context/quality-policy',
     chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
+    chipColor: 'info'
   },
 
-  // -------------------------------------------------------------
-  // RISK & OPPORTUNITIES (Clause 6.1 & Clause 6.2)
-  // -------------------------------------------------------------
-  { header: 'Risk & Opportunities' },
+  { header: 'CLAUSE 6: PLANNING, RISKS & CHANGE' },
   {
-    title: 'Risk Management',
-    icon: 'custom-warning-outline',
-    children: [
-      {
-        title: 'Risk Assessment',
-        to: '/risk-management/threats'
-      },
-      {
-        title: 'Opportunity Register',
-        to: '/risk-management/opportunities',
-        chip: '2026',
-        chipColor: 'primary',
-        chipVariant: 'tonal'
-      }
-    ]
+    title: 'Risk Management Workspace',
+    icon: 'alert-triangle-icon',
+    to: '/risk-management'
+  },
+  {
+    title: 'Opportunity Register',
+    icon: 'bulb-icon',
+    to: '/risk-management/opportunities',
+    chip: 'New',
+    chipColor: 'success'
   },
   {
     title: 'Quality Objectives',
-    icon: 'custom-target-outline',
-    to: '/quality-objectives/monitoring'
+    icon: 'target-icon',
+    to: '/quality-objectives'
   },
 
-  // -------------------------------------------------------------
-  // DOCUMENT & CHANGE CONTROL (Clause 6.3 & Clause 7.5)
-  // -------------------------------------------------------------
-  { header: 'Document & Change Control' },
+  { header: 'CLAUSE 7: SUPPORT & KNOWLEDGE' },
   {
-    title: 'Process & Forms',
-    icon: 'custom-document-text-outline',
-    to: '/qms/process-forms'
+    title: 'Documented Information',
+    icon: 'file-text-icon',
+    to: '/documents'
   },
   {
-    title: 'Version Control Logs',
-    icon: 'custom-history-outline',
-    to: '/qms/version-logs'
+    title: 'Management of Change (MOC)',
+    icon: 'file-diff-icon',
+    to: '/documents/amendment'
   },
   {
-    title: 'Approval Workflow (MOC)',
-    icon: 'custom-git-fork-outline',
-    to: '/qms/approval-workflow',
-    subCaption: 'Management of Change'
-  },
-
-  // -------------------------------------------------------------
-  // REPORTS & OPERATIONS (Clause 8)
-  // -------------------------------------------------------------
-  { header: 'Reports & Operations' },
-  {
-    title: 'Workspace',
-    icon: 'custom-briefcase-outline',
-    to: '/reports/workspace'
-  },
-  {
-    title: 'Submissions',
-    icon: 'custom-send-outline',
-    to: '/reports/submission'
-  },
-  {
-    title: 'Track My Submission',
-    icon: 'custom-search-outline',
-    to: '/reports/track-submission'
-  },
-
-  // -------------------------------------------------------------
-  // EVALUATION & IMPROVEMENT (Clause 9 & Clause 10)
-  // -------------------------------------------------------------
-  { header: 'Evaluation & Improvement' },
-  {
-    title: 'Internal Audit Program',
-    icon: 'custom-clipboard-outline',
-    to: '/improvement/internal-audits',
+    title: 'Organizational Knowledge',
+    icon: 'book-icon',
+    to: '/documents/knowledge-bank',
     chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
+    chipColor: 'info'
   },
+
+  { header: 'CLAUSE 8: OPERATIONS & RESILIENCE' },
   {
-    title: 'Management Review',
-    icon: 'custom-presentation-outline',
-    to: '/improvement/management-review',
-    chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
+    title: 'Operations & Resilience',
+    icon: 'shield-lock-icon',
+    to: '/operations/resilience'
+  },
+
+  { header: 'CLAUSE 9 & 10: AUDITS & CAPA' },
+  {
+    title: 'Internal Audits',
+    icon: 'clipboard-check-icon',
+    to: '/audits'
   },
   {
     title: 'CAPA Log',
-    icon: 'custom-refresh-outline',
-    to: '/improvement/capa-log',
-    chip: '2026',
-    chipColor: 'primary',
-    chipVariant: 'tonal'
-  },
-
-  // -------------------------------------------------------------
-  // SYSTEM MANAGEMENT
-  // -------------------------------------------------------------
-  { header: 'System Management' },
-  {
-    title: 'Account',
-    icon: 'custom-user-outline',
-    to: '/system/account'
-  },
-  {
-    title: 'Roles',
-    icon: 'custom-key-outline',
-    to: '/system/roles'
-  },
-  {
-    title: 'Departments',
-    icon: 'custom-building-outline',
-    to: '/system/departments'
-  },
-  {
-    title: 'Form Builder',
-    icon: 'custom-wrench-outline',
-    to: '/system/form-builder'
+    icon: 'alert-circle-icon',
+    to: '/capa'
   }
 ];
 

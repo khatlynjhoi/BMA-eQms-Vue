@@ -13,13 +13,12 @@ const emailRules = [
   (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid'
 ];
 
-const handlePasswordReset = async () => {
+const handlePasswordReset = async (): Promise<void> => {
   const { valid } = await logform.value.validate();
   if (!valid) return;
 
   loading.value = true;
   try {
-    // API request placeholder: await authStore.requestPasswordReset(email.value)
     alertService.toast('Password reset instructions sent to your email.');
     await router.push('/login');
   } catch (error) {

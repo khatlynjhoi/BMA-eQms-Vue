@@ -14,22 +14,22 @@ export const useCustomizerStore = defineStore('customizer', {
   }),
 
   actions: {
-    SET_SIDEBAR_DRAWER() {
+    SET_SIDEBAR_DRAWER(): void {
       this.Sidebar_drawer = !this.Sidebar_drawer;
     },
-    SET_MINI_SIDEBAR(payload: boolean) {
+    SET_MINI_SIDEBAR(payload: boolean): void {
       this.mini_sidebar = payload;
     },
-    SET_CUSTOMIZER_DRAWER(payload: boolean) {
+    SET_CUSTOMIZER_DRAWER(payload: boolean): void {
       this.Customizer_drawer = payload;
     },
-    SET_LAYOUT(payload: boolean) {
+    SET_LAYOUT(payload: boolean): void {
       this.setHorizontalLayout = payload;
     },
-    SET_THEME(payload: string) {
+    SET_THEME(payload: string): void {
       this.actTheme = payload;
     },
-    SET_FONT(payload: string) {
+    SET_FONT(payload: string): void {
       this.fontTheme = payload;
     }
   }

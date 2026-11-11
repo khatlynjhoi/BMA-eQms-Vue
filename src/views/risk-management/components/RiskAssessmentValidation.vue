@@ -11,7 +11,11 @@ const props = defineProps<{
   };
 }>();
 
-const emit = defineEmits(['update:modelValue', 'approved', 'disapproved']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'approved', validation: any): void;
+  (e: 'disapproved', payload: FormData): void;
+}>();
 
 const isDisapproved = ref(false);
 const remarks = ref('');
@@ -43,7 +47,7 @@ const getStatusBadge = (statusVal: number) => {
     <v-card rounded="lg">
       <v-card-title class="pa-4 bg-primary text-white d-flex align-center justify-space-between">
         <span class="text-h6 font-weight-bold">Risk Assessment Validation Report (Clause 6.1)</span>
-        <v-btn icon variant="text" color="white" size="small" @click="formModalClose">
+        <v-btn icon variant="text" color="white" size="small" aria-label="Close Validation" @click="formModalClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>

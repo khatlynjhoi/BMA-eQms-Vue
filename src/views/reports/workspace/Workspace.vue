@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import CreateRequest from './components/CreateRequest.vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import ModalFormEdit from './components/ModalFormEdit.vue';
 import TableRequestList from './components/TableRequestList.vue';
 import ViewRequest from './components/ViewRequest.vue';
@@ -26,6 +25,13 @@ const tableHeader = [
   { title: 'Date Created', key: 'created_at', align: 'start' as const }
 ];
 
+const revokePdfLink = () => {
+  if (formPreview.value?.pdfLink && formPreview.value.pdfLink.startsWith('blob:')) {
+    URL.revokeObjectURL(formPreview.value.pdfLink);
+    formPreview.value.pdfLink = null;
+  }
+};
+
 const getForm = async () => {
   try {
     const data: any = await service.getFormList();
@@ -45,26 +51,9 @@ onMounted(async () => {
   contentLoading.value = false;
 });
 
-const storeFormResponse = async (form: any) => {
-  const confirmed = await alertService.confirm('Save this Form Request?');
-  if (!confirmed.isConfirmed) return;
-
-  contentLoading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('formId', String(form.formId));
-    formData.append('responses', JSON.stringify(form.data));
-
-    await service.storeFormResponse(formData);
-    alertService.toast('Form request saved successfully.');
-    await getForm();
-  } catch (err: any) {
-    console.error('Store form error:', err);
-    alertService.error('Failed to save form request.');
-  } finally {
-    contentLoading.value = false;
-  }
-};
+onBeforeUnmount(() => {
+  revokePdfLink();
+});
 
 const editFormSelected = (form: any) => {
   formSelected.value = form;
@@ -116,6 +105,7 @@ const removeFormResponse = async (response: any) => {
 };
 
 const viewRequest = async (response: any) => {
+  revokePdfLink();
   try {
     const blob: any = await service.viewResponsePdf(response.id);
     const url = URL.createObjectURL(blob);
@@ -162,16 +152,19 @@ const viewRequest = async (response: any) => {
               @view="viewRequest"
             />
           </v-window-item>
-          
+
           <v-window-item value="two">
             <v-card border elevation="0" class="pa-6 text-center text-secondary">
               <v-icon size="40" class="mb-2">mdi-file-document-multiple-outline</v-icon>
               <p class="text-body-1 mb-0">No submission logs available.</p>
             </v-card>
           </v-window-item>
-          
+
           <v-window-item value="three">
-            <CreateRequest :form-list="formList" @store="storeFormResponse" />
+            <v-card border elevation="0" class="pa-6 text-center text-secondary">
+              <v-icon size="40" class="mb-2">mdi-plus-circle-outline</v-icon>
+              <p class="text-body-1 mb-0">Form Request Builder Studio</p>
+            </v-card>
           </v-window-item>
         </v-window>
       </template>

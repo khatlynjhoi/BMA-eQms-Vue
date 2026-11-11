@@ -7,7 +7,11 @@ const props = defineProps<{
   role?: number;
 }>();
 
-const emit = defineEmits(['edit', 'preview', 'export']);
+const emit = defineEmits<{
+  (e: 'edit', id: number | string): void;
+  (e: 'preview', id: number | string): void;
+  (e: 'export', item: any): void;
+}>();
 
 const search = ref('');
 
@@ -24,7 +28,11 @@ const filteredItems = computed(() => {
   if (!props.data) return [];
   if (!search.value) return props.data;
   const term = search.value.toLowerCase();
-  return props.data.filter((item) => item.form_name?.toLowerCase().includes(term) || item.form_code?.toLowerCase().includes(term));
+  return props.data.filter(
+    (item) =>
+      item.form_name?.toLowerCase().includes(term) ||
+      item.form_code?.toLowerCase().includes(term)
+  );
 });
 </script>
 
@@ -32,7 +40,7 @@ const filteredItems = computed(() => {
   <v-container fluid class="pa-0">
     <v-toolbar flat color="transparent" class="mb-4">
       <v-toolbar-title class="text-h6 font-weight-bold px-0">
-        Fillable QMS Forms Library
+        FILLABLE QMS FORMS LIBRARY (CLAUSE 7.5)
       </v-toolbar-title>
       <v-spacer />
       <v-text-field
@@ -46,14 +54,14 @@ const filteredItems = computed(() => {
       />
     </v-toolbar>
 
-    <v-card border elevation="0">
+    <v-card border elevation="0" rounded="lg">
       <v-data-table
         :items="filteredItems"
         :headers="headersList"
         :search="search"
-        class="elevation-0"
+        class="elevation-0 text-body-2"
       >
-        <template v-slot:item.action="{ item }">
+        <template #item.action="{ item }">
           <v-btn color="info" size="small" variant="tonal" class="mr-2" @click="emit('edit', item.id)">
             Edit
           </v-btn>

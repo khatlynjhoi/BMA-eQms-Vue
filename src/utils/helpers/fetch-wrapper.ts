@@ -7,61 +7,63 @@ export const fetchWrapper = {
   delete: request('DELETE')
 };
 
-interface temp {
+interface RequestOptions {
   method: string;
   headers: Record<string, string>;
   body?: string;
 }
 
-interface UserData {
-  username: string;
-  password: string;
-}
-
 function request(method: string) {
-  return (url: string, body?: object) => {
-    const requestOptions: temp = {
+  return <T = any>(url: string, body?: object): Promise<T> => {
+    const requestOptions: RequestOptions = {
       method,
       headers: authHeader(url)
     };
+
     if (body) {
       requestOptions.headers['Content-Type'] = 'application/json';
       requestOptions.body = JSON.stringify(body);
     }
+
     return fetch(url, requestOptions).then(handleResponse);
   };
 }
 
-// helper functions
-
 function authHeader(url: string): Record<string, string> {
-  // return auth header with jwt if user is logged in and request is to the api url
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user?.token;
-  const isApiUrl = url.startsWith(import.meta.env.VITE_API_URL);
-  if (isLoggedIn && isApiUrl) {
-    return { Authorization: `Bearer ${user.token}` };
+  const token =
+    localStorage.getItem('laravel_api_token') ||
+    localStorage.getItem('token') ||
+    useAuthStore().token;
+
+  const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+  const isApiUrl = !rawApiUrl || url.startsWith(rawApiUrl) || url.startsWith('/api');
+
+  if (token && isApiUrl) {
+    return {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    };
   } else {
-    return {};
+    return {
+      Accept: 'application/json'
+    };
   }
 }
 
-function handleResponse(response: Response): Promise<UserData> {
+function handleResponse(response: Response): Promise<any> {
   return response.text().then((text: string) => {
-    const data = text && JSON.parse(text);
+    const data = text ? JSON.parse(text) : {};
 
     if (!response.ok) {
-      const { user, logout } = useAuthStore();
-      if ([401, 403].includes(response.status) && user) {
-        // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        logout();
+      const authStore = useAuthStore();
+      if ([401, 403].includes(response.status) && authStore.token) {
+        authStore.logout();
       }
 
-      const error: string = (data && data.message) || response.statusText;
+      const error: string = data.message || data.error || response.statusText;
       return Promise.reject(error);
     }
 
-    // Ensure data is of type UserData
-    return data as UserData;
+    return data;
   });
 }

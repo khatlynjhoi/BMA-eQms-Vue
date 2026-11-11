@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import ProcedureCard from '../components/ProcedureCard.vue';
-import ProcedurePDFViewer from '../components/ProcedurePDFViewer.vue';
-import UploadProcedure from '../components/UploadProcedure.vue';
-import FormProcedure from '../components/FormProcedure.vue';
+import ProcedureCard from './components/ProcedureCard.vue';
+import ProcedurePDFViewer from './components/ProcedurePDFViewer.vue';
+import UploadProcedure from './components/UploadProcedure.vue';
+import FormProcedure from './components/FormProcedure.vue';
 
 defineProps<{
   detailed: {
@@ -22,20 +22,20 @@ const tab = ref('one');
   <ProcedureCard :title="detailed.prodName" :version="detailed.prodVersion">
     <div v-if="detailed.fileID && detailed.fileID !== 0 && detailed.fileID !== '0'">
       <v-tabs v-model="tab" color="primary" class="px-4 border-b">
-        <v-tab value="one" class="font-weight-medium">DOCUMENT VIEW</v-tab>
-        <v-tab value="two" class="font-weight-medium">LINKED FORMS</v-tab>
-        <v-tab value="three" class="font-weight-medium">REVISION CONTROL</v-tab>
+        <v-tab value="one" class="font-weight-medium">DOCUMENTED INFORMATION (7.5)</v-tab>
+        <v-tab value="two" class="font-weight-medium">LINKED FORMS (7.5.3)</v-tab>
+        <v-tab value="three" class="font-weight-medium">REVISION CONTROL (MOC 6.3)</v-tab>
       </v-tabs>
 
       <v-window v-model="tab" class="pa-2">
         <v-window-item value="one">
           <ProcedurePDFViewer :file-i-d="detailed.fileID" model="ProcedureDocuments" />
         </v-window-item>
-        
+
         <v-window-item value="two">
           <FormProcedure v-model:form-list="detailed.formLists" :procedure="detailed.prodId" />
         </v-window-item>
-        
+
         <v-window-item value="three">
           <UploadProcedure :procedure="detailed.prodId" />
         </v-window-item>

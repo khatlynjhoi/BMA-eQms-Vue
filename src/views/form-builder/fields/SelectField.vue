@@ -21,7 +21,6 @@ defineEmits<{
     <label class="text-caption font-weight-bold text-secondary mb-1 d-block">{{ field.label }}</label>
     <v-select
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
       :items="field.options"
       :item-title="field.itemTitle || 'label'"
       :item-value="field.itemValue || 'value'"
@@ -31,6 +30,7 @@ defineEmits<{
       hide-details="auto"
       variant="outlined"
       color="primary"
+      @update:model-value="$emit('update:modelValue', $event)"
     />
   </div>
 </template>
